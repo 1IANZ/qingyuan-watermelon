@@ -1,6 +1,6 @@
 "use client";
 
-import { ScanLine, Search, Sprout } from "lucide-react";
+import { ScanLine, Search, Sprout, UserCog } from "lucide-react"; // ✅ 引入 UserCog 图标
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -21,18 +21,36 @@ export default function ConsumerHome() {
 	// 处理手动查询
 	const handleSearch = () => {
 		if (!traceId.trim()) return;
-		// 跳转到详情页，带上 ID 参数
 		router.push(`/trace/result?id=${traceId}`);
 	};
 
 	// 处理扫码 (模拟)
 	const handleScanClick = () => {
 		alert("此处调用手机摄像头组件，扫描成功后自动填入ID并跳转");
-		// 实际逻辑：打开摄像头 -> 识别二维码 -> router.push(...)
+	};
+
+	// ✅ 处理登录跳转
+	const handleLoginClick = () => {
+		router.push("/login"); // 跳转到登录页
 	};
 
 	return (
-		<div className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-4">
+		// ✅ 增加 relative，为了让内部的绝对定位按钮以这里为基准
+		<div className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-4 relative">
+
+			{/* ✅ 新增：右上角登录入口 */}
+			<div className="absolute top-4 right-4">
+				<Button
+					variant="ghost"
+					className="text-green-700 hover:text-green-900 hover:bg-green-100 gap-2"
+					onClick={handleLoginClick}
+				>
+					<UserCog className="w-4 h-4" />
+					<span className="hidden sm:inline">农户/监管登录</span> {/* 手机上只显示图标，电脑显示文字 */}
+					<span className="sm:hidden">登录</span>
+				</Button>
+			</div>
+
 			<div className="mb-8 text-center space-y-2">
 				<div className="bg-green-100 p-4 rounded-full inline-block mb-2">
 					<Sprout className="w-10 h-10 text-green-600" />

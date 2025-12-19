@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowLeft,
   Calendar,
   Camera,
   Droplets,
@@ -12,7 +13,7 @@ import {
   Tag,
   Truck,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-// --- 1. 配置数据 (保持不变) ---
+interface BatchType {
+  name: string;
+  variety: string;
+  location: string;
+  days: number;
+}
+// --- 1. 配置数据：定义操作类型和对应的快捷标签 ---
 const ACTION_TYPES = [
   {
     id: "water",
@@ -68,15 +75,9 @@ const ACTION_TYPES = [
     tags: ["大棚修缮", "整枝打叉", "授粉", "清理杂草", "农机作业"],
   },
 ];
-interface Action {
-  name: string;
-  variety: string;
-  location: string;
-  days: number;
 
-}
-// --- ✅ 新增：模拟数据库 (根据ID查找信息) ---
-const MOCK_BATCH_DB: Record<string, Action> = {
+// --- 2. 模拟数据库 (用于根据 URL 的 batchId 显示顶部信息) ---
+const MOCK_BATCH_DB: Record<string, BatchType> = {
   batch_001: {
     name: "清苑A03号暖棚",
     variety: "麒麟8424",
@@ -98,20 +99,21 @@ const MOCK_BATCH_DB: Record<string, Action> = {
   },
 };
 
-// --- ✅ 内部组件：包含 searchParams 逻辑 ---
+// --- 3. 核心表单组件 ---
 function RecordForm() {
-  // 1. 获取 URL 参数
+  // 获取 URL 参数
   const searchParams = useSearchParams();
   const batchId = searchParams.get("batchId"); // 获取 ?batchId=...
 
-  // 2. 根据 ID 查找信息 (如果在真实项目，这里应该是一个 API 请求)
-  const batchInfo = MOCK_BATCH_DB[batchId || ""] || MOCK_BATCH_DB["default"];
+  // 根据 ID 查找信息 (模拟数据库查询)
+  const batchInfo = MOCK_BATCH_DB[batchId || ""] || MOCK_BATCH_DB.default;
 
   // 状态管理
   const [selectedType, setSelectedType] = useState(ACTION_TYPES[0].id);
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 获取当前配置
   const currentTypeConfig =
     ACTION_TYPES.find((t) => t.id === selectedType) || ACTION_TYPES[0];
   const CurrentIcon = currentTypeConfig.icon;
@@ -127,15 +129,17 @@ function RecordForm() {
     }
     setIsSubmitting(true);
 
-    // 模拟提交数据包含 batchId
+    // 模拟提交
     console.log("提交数据:", {
-      batchId: batchId, // ✅ 提交时带上 ID
+      batchId: batchId,
       type: selectedType,
       desc: description,
     });
 
     setTimeout(() => {
-      alert(`✅ [${batchInfo.name}] 的记录上传成功！`);
+      alert(
+        `✅ [${batchInfo.name}] 的记录上传成功！\n消费者扫码即可看到最新状态。`,
+      );
       setIsSubmitting(false);
       setDescription("");
     }, 1000);
@@ -143,7 +147,7 @@ function RecordForm() {
 
   return (
     <div className="space-y-6 max-w-md mx-auto">
-      {/* --- ✅ 优化点：动态显示的头部卡片 --- */}
+      {/* 顶部：动态档案信息卡片 */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div className="flex justify-between items-start mb-3">
           <div>
@@ -166,7 +170,7 @@ function RecordForm() {
         <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 bg-gray-50 p-2 rounded-lg">
           <div className="flex items-center">
             <MapPin className="w-3 h-3 mr-1 text-gray-400" />
-            {batchInfo.location} ({batchInfo.name})
+            {batchInfo.location}
           </div>
           <div className="flex items-center">
             <Calendar className="w-3 h-3 mr-1 text-gray-400" />
@@ -185,7 +189,7 @@ function RecordForm() {
 
             return (
               <button
-                type="button"
+                type="button" // 防止表单意外提交
                 key={type.id}
                 onClick={() => setSelectedType(type.id)}
                 className={`
@@ -256,7 +260,6 @@ function RecordForm() {
                   ? "请输入具体的操作内容..."
                   : `请输入${currentTypeConfig.label}的具体信息...`
               }
-              // ✅ 修复了 min-h-30 不规范的问题，改为 tailwind 标准写法
               className="min-h-30 text-base resize-none focus-visible:ring-green-500 bg-gray-50/50"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -293,18 +296,37 @@ function RecordForm() {
   );
 }
 
-// --- ✅ 默认导出：使用 Suspense 包裹 ---
-// 在 Next.js 中，使用 useSearchParams 的组件必须包裹在 Suspense 中，否则可能导致构建报错
+
 export default function AdminAddRecordPage() {
+  const router = useRouter(); // ✅ 获取 router 实例
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-20">
-      <Suspense
-        fallback={
-          <div className="text-center pt-10 text-gray-500">
-            正在加载地块信息...
-          </div>
-        }
-      >
+
+      {/* ✅ 修改后的 Header：增加了左侧返回按钮 */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center">
+          {/* 返回按钮 */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            className="-ml-2 mr-1"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-700" />
+          </Button>
+          <h1 className="text-xl font-bold text-gray-900">新增农事记录</h1>
+        </div>
+
+        <div className="text-right">
+          <span className="block text-xs text-gray-400">系统时间</span>
+          <span className="font-mono text-sm font-medium">
+            {new Date().toLocaleDateString()}
+          </span>
+        </div>
+      </div>
+
+      <Suspense fallback={<div className="text-center pt-10 text-gray-500">正在加载地块信息...</div>}>
         <RecordForm />
       </Suspense>
     </div>
