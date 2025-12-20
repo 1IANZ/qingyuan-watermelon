@@ -1,6 +1,6 @@
 "use client";
 
-import { ScanLine, Search, Sprout, UserCog } from "lucide-react"; // ✅ 引入 UserCog 图标
+import { ScanLine, Search, Sprout, UserCog } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -18,27 +18,29 @@ export default function ConsumerHome() {
 	const [traceId, setTraceId] = useState("");
 	const router = useRouter();
 
-	// 处理手动查询
 	const handleSearch = () => {
 		if (!traceId.trim()) return;
-		router.push(`/trace/result?id=${traceId}`);
+		router.push(`/trace/${traceId.trim()}`);
 	};
 
 	// 处理扫码 (模拟)
 	const handleScanClick = () => {
-		alert("此处调用手机摄像头组件，扫描成功后自动填入ID并跳转");
+		// 实际项目中这里接微信/支付宝/浏览器的扫码SDK
+		// 扫码结果通常是一个完整的 URL (http://.../trace/uuid)
+
+		alert("模拟扫码成功！将跳转到演示页面");
+
+
 	};
 
-	// ✅ 处理登录跳转
+	// 处理登录跳转
 	const handleLoginClick = () => {
-		router.push("/login"); // 跳转到登录页
+		router.push("/login");
 	};
 
 	return (
-		// ✅ 增加 relative，为了让内部的绝对定位按钮以这里为基准
 		<div className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-4 relative">
 
-			{/* ✅ 新增：右上角登录入口 */}
 			<div className="absolute top-4 right-4">
 				<Button
 					variant="ghost"
@@ -46,7 +48,7 @@ export default function ConsumerHome() {
 					onClick={handleLoginClick}
 				>
 					<UserCog className="w-4 h-4" />
-					<span className="hidden sm:inline">农户/监管登录</span> {/* 手机上只显示图标，电脑显示文字 */}
+					<span className="hidden sm:inline">农户/监管登录</span>
 					<span className="sm:hidden">登录</span>
 				</Button>
 			</div>
@@ -56,8 +58,11 @@ export default function ConsumerHome() {
 					<Sprout className="w-10 h-10 text-green-600" />
 				</div>
 				<h1 className="text-3xl font-bold text-green-900 tracking-tight">
-					清苑西瓜
+					清苑西瓜溯源平台
 				</h1>
+				<p className="text-green-700/80 text-sm">
+					一瓜一码 · 全程透明 · 品质保障
+				</p>
 			</div>
 
 			<Card className="w-full max-w-md shadow-lg border-green-100">
@@ -74,7 +79,8 @@ export default function ConsumerHome() {
 							<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
 							<Input
 								type="text"
-								placeholder="例如: 20230620-8823"
+
+								placeholder="例如: KL-1718..."
 								className="pl-9 border-green-200 focus-visible:ring-green-500"
 								value={traceId}
 								onChange={(e) => setTraceId(e.target.value)}
@@ -97,6 +103,7 @@ export default function ConsumerHome() {
 							<span className="bg-white px-2 text-gray-400">或者</span>
 						</div>
 					</div>
+
 					<Button
 						variant="outline"
 						className="w-full h-12 border-dashed border-2 border-green-300 text-green-700 hover:bg-green-50 hover:border-green-500 transition-all"
@@ -107,6 +114,10 @@ export default function ConsumerHome() {
 					</Button>
 				</CardContent>
 			</Card>
+
+			<footer className="absolute bottom-6 text-center text-xs text-green-800/40">
+				© 2025 清苑区农业农村局 · 技术支持
+			</footer>
 		</div>
 	);
 }

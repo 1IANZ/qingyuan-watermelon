@@ -188,9 +188,13 @@ export default async function AdminPage() {
                   </Link>
 
 
-                  <Link href={`/trace/${batch.id}`} target="_blank" className="flex-1">
-                    <Button variant="outline" className="w-full h-9 text-xs bg-white text-gray-600">
-                      <QrCode className="w-3.5 h-3.5 mr-1" /> 查看溯源页
+                  <Link href={`/trace/${batch.batch_no}`} className="flex-1">
+                    <Button
+                      variant="outline"
+                      className="w-full h-9 text-xs bg-white text-gray-600"
+                    >
+                      <QrCode className="w-3.5 h-3.5 mr-1" />
+                      查看溯源页
                     </Button>
                   </Link>
                 </CardFooter>

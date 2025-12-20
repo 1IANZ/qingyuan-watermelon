@@ -13,7 +13,6 @@ import {
   User,
 } from "lucide-react";
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { db } from "@/lib/db";
@@ -59,41 +58,63 @@ function getTypeName(type: string) {
   return map[type] || "农事操作";
 }
 
-// 🟢 这是一个公开页面 (Server Component)
+
 export default async function TracePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+
   const { id } = await params;
 
-  // 1. 查库：获取批次信息及其所有记录
-  const batch = await db.batches.findUnique({
-    where: { id },
+  const batch = await db.batches.findFirst({
+    where: {
+      batch_no: id
+    },
     include: {
       records: {
-        orderBy: { recorded_at: "desc" }, // 按时间倒序排列 (最新的在最上面)
+        orderBy: { recorded_at: "desc" },
       },
     },
   });
 
   if (!batch) {
-    return notFound();
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+        <div className="text-center space-y-4">
+          <div className="bg-gray-100 p-4 rounded-full inline-block">
+            <Sprout className="w-12 h-12 text-gray-400" />
+          </div>
+          <h1 className="text-xl font-bold text-gray-900">未找到该批次档案</h1>
+          <p className="text-gray-500 max-w-xs mx-auto text-sm">
+            系统无法识别溯源码 <span className="font-mono font-bold text-gray-700 mx-1">{id}</span>
+            <br />请检查标签上的编号是否输入正确。
+          </p>
+          <a href="/" className="inline-block mt-4 px-6 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors">
+            返回首页重新查询
+          </a>
+        </div>
+      </div>
+    );
   }
 
-  // 2. 静态资源模拟 (实际项目中根据 variety 显示不同图片)
+  // 3. 页面顶部的背景图 (Unsplash 图片)
   const bgImage =
     "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=800";
 
   return (
     <div className="min-h-screen bg-gray-50 max-w-md mx-auto shadow-2xl overflow-hidden relative">
+
+      {/* --- 顶部：沉浸式头图 --- */}
       <div className="relative h-64 bg-gray-900">
         <Image
           src={bgImage}
           alt="西瓜种植基地"
-          fill // 自动填充父容器
-          className="object-cover opacity-80" // 保持样式
-          priority // 优先加载这张图，防止闪烁
+          fill
+          className="object-cover opacity-80"
+          priority
+          sizes="(max-width: 768px) 100vw, 500px"
+          unoptimized
         />
         <div className="absolute inset-0 bg-linear-to-t from-gray-900/90 to-transparent" />
 
@@ -147,6 +168,8 @@ export default async function TracePage({
         </h2>
 
         <div className="relative border-l-2 border-green-200 ml-3 space-y-8 pb-10">
+
+          {/* 1. 起点：播种 */}
           <div className="relative pl-8">
             <div className="absolute -left-2.25 top-0 w-4 h-4 rounded-full bg-green-500 border-4 border-white shadow-sm" />
             <div className="flex flex-col">
@@ -162,6 +185,7 @@ export default async function TracePage({
             </div>
           </div>
 
+          {/* 2. 中间：动态记录列表 */}
           {batch.records.map((record) => {
             const Icon = getActionIcon(record.action_type);
             const colorClass = getActionColor(record.action_type);
@@ -173,6 +197,7 @@ export default async function TracePage({
                 />
 
                 <div className="flex flex-col">
+                  {/* 时间 */}
                   <div className="flex items-center text-xs text-gray-400 mb-1">
                     <Clock className="w-3 h-3 mr-1" />
                     {format(
@@ -181,10 +206,12 @@ export default async function TracePage({
                     )}
                   </div>
 
+                  {/* 标题 */}
                   <span className="font-bold text-gray-800 text-base flex items-center">
                     {getTypeName(record.action_type)}
                   </span>
 
+                  {/* 详情卡片 */}
                   <div className="mt-2 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
                     <div className="flex items-start gap-3">
                       <div
@@ -209,6 +236,7 @@ export default async function TracePage({
           })}
         </div>
 
+        {/* 底部版权 */}
         <div className="text-center mt-10 pb-10">
           <p className="text-xs text-gray-300">清苑区农业农村局 · 监管认证</p>
           <p className="text-[10px] text-gray-200 mt-1">溯源码: {id}</p>
