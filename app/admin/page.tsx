@@ -1,177 +1,203 @@
-"use client";
-
+import { format } from "date-fns";
 import {
-  AlertCircle,
-  ChevronRight,
+  CalendarDays,
   ClipboardList,
+  History,
+  MapPin,
   Plus,
+  QrCode, // 新增二维码图标，强调溯源属性
   Sprout,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { db } from "@/lib/db";
 
-// 模拟农户名下的所有地块/批次数据
-const BATCH_LIST = [
-  {
-    id: "batch_001",
-    name: "清苑A03号暖棚", // 地块名
-    variety: "麒麟8424", // 品种
-    status: "growing", // 状态：生长中
-    stage: "果实膨大期", // 当前阶段
-    dayCount: 45, // 种植天数
-    progress: 65, // 生长进度条 (0-100)
-    lastAction: "2天前 (施肥)", // 最近操作
-    warnings: 0, // 预警数量
-  },
-  {
-    id: "batch_002",
-    name: "东闾B12号露天田",
-    variety: "黑美人",
-    status: "warning", // 状态：有预警
-    stage: "开花坐果期",
-    dayCount: 28,
-    progress: 30,
-    lastAction: "5天前 (灌溉)",
-    warnings: 1, // 有一条未处理预警
-  },
-  {
-    id: "batch_003",
-    name: "试验田C区",
-    variety: "特小凤 (黄瓤)",
-    status: "finished", // 状态：已采收
-    stage: "已完结",
-    dayCount: 90,
-    progress: 100,
-    lastAction: "2023-06-15 (采收)",
-    warnings: 0,
-  },
-];
-
-export default function AdminDashboard() {
-  const router = useRouter();
-
-  // 跳转到我们刚才写的“添加记录”页面，并带上批次ID
-  const handleCardClick = (batchId: string) => {
-    router.push(`/admin/add-record?batchId=${batchId}`);
+// 辅助函数：操作类型转中文
+function getTypeName(type: string) {
+  const map: Record<string, string> = {
+    water: "灌溉",
+    fertilizer: "施肥",
+    pesticide: "植保/打药", // 强调农药记录
+    harvest: "采收",
+    custom: "其他农事",
   };
+  return map[type] || "农事操作";
+}
 
-  // 跳转到新建批次页
-  const handleCreateNew = () => {
-    router.push("/admin/create-batch");
-  };
+// 辅助函数：状态转中文及样式
+function getStatusConfig(status: string | null) {
+  switch (status) {
+    case "finished":
+      return {
+        label: "已采收上市",
+        color: "bg-gray-100 text-gray-500 border-gray-200",
+      };
+    case "warning":
+      return {
+        label: "异常/预警",
+        color: "bg-red-50 text-red-600 border-red-200",
+      };
+    default:
+      return {
+        label: "种植中",
+        color: "bg-green-50 text-green-700 border-green-200",
+      };
+  }
+}
+
+export default async function AdminPage() {
+  // 1. 查询数据库：按创建时间倒序
+  const batches = await db.batches.findMany({
+    orderBy: { created_at: "desc" },
+    include: {
+      records: {
+        take: 1, // 只取最新的一条记录
+        orderBy: { recorded_at: "desc" },
+      },
+    },
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-20">
+      {/* 1. 顶部标头 */}
       <div className="mb-6 flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">工作台</h1>
-          <p className="text-sm text-gray-500">欢迎回来，张三 (绿源合作社)</p>
+          <h1 className="text-2xl font-bold text-gray-900">溯源管理工作台</h1>
+          <p className="text-sm text-gray-500">
+            清苑西瓜溯源与品质协同监管系统
+          </p>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          onClick={handleCreateNew}
-          className="bg-green-600 hover:bg-green-700 shadow-sm"
-        >
-          <Plus className="w-4 h-4 mr-1" /> 开新批次
-        </Button>
+        <Link href="/admin/create-batch">
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 shadow-sm"
+          >
+            <Plus className="w-4 h-4 mr-1" /> 新建批次
+          </Button>
+        </Link>
       </div>
 
-      {/* 2. 统计概览 (可选) */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 text-center">
-          <div className="text-2xl font-bold text-gray-800">3</div>
-          <div className="text-xs text-gray-400">进行中</div>
-        </div>
-        <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 text-center">
-          <div className="text-2xl font-bold text-orange-500">1</div>
-          <div className="text-xs text-gray-400">待处理</div>
-        </div>
-        <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 text-center">
-          <div className="text-2xl font-bold text-green-600">8</div>
-          <div className="text-xs text-gray-400">已上市</div>
-        </div>
-      </div>
-
-      {/* 3. 批次列表 (核心区域) */}
+      {/* 2. 批次列表区域 */}
       <div className="space-y-4">
-        <h2 className="text-base font-semibold text-gray-700 flex items-center">
+        <h2 className="text-base font-semibold text-gray-700 flex items-center mb-4">
           <ClipboardList className="w-4 h-4 mr-2" />
-          种植管理列表
+          种植批次档案 ({batches.length})
         </h2>
 
-        {BATCH_LIST.map((batch) => (
-          <Card
-            key={batch.id}
-            className={`
-              active:scale-95 transition-transform cursor-pointer overflow-hidden border-l-4
-              ${batch.status === "warning"
-                ? "border-l-red-500"
-                : batch.status === "finished"
-                  ? "border-l-gray-300 opacity-80"
-                  : "border-l-green-500"
-              }
-            `}
-            onClick={() => handleCardClick(batch.id)}
-          >
-            <CardHeader className="pb-2 pt-4 px-4 flex flex-row items-start justify-between space-y-0">
-              <div>
-                <CardTitle className="text-base font-bold text-gray-800 flex items-center">
-                  {batch.name}
-                  {batch.status === "warning" && (
-                    <AlertCircle className="w-4 h-4 text-red-500 ml-2 animate-pulse" />
-                  )}
-                </CardTitle>
-                <div className="flex items-center text-xs text-gray-500 mt-1">
-                  <Sprout className="w-3 h-3 mr-1" /> {batch.variety}
-                </div>
-              </div>
-              <Badge
-                variant={batch.status === "finished" ? "secondary" : "outline"}
-                className="text-xs"
+        {batches.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+            <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Sprout className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500 font-medium">暂无溯源档案</p>
+            <p className="text-xs text-gray-400 mt-1 mb-4">
+              请点击右上角新建批次，开始“一株一码”溯源
+            </p>
+            <Link href="/admin/create-batch">
+              <Button variant="outline">立即新建</Button>
+            </Link>
+          </div>
+        ) : (
+          batches.map((batch) => {
+            const statusConfig = getStatusConfig(batch.status);
+            const lastRecord = batch.records[0];
+            const sowingDate = format(
+              new Date(batch.sowing_date),
+              "yyyy年MM月dd日",
+            );
+
+            return (
+              <Card
+                key={batch.id}
+                className="overflow-hidden border-l-4 border-l-green-600 shadow-sm hover:shadow-md transition-shadow"
               >
-                {batch.stage}
-              </Badge>
-            </CardHeader>
+                {/* 卡片头部：批次号 + 状态 */}
+                <CardHeader className="pb-3 pt-4 px-4 flex flex-row items-center justify-between space-y-0 border-b border-gray-100 bg-gray-50/30">
+                  <div className="flex items-center gap-2">
+                    <QrCode className="w-5 h-5 text-gray-400" />
+                    <span className="font-mono font-bold text-gray-700 text-lg">
+                      {batch.batch_no}
+                    </span>
+                  </div>
+                  <div
+                    className={`text-xs px-2.5 py-0.5 rounded-full border ${statusConfig.color} font-medium`}
+                  >
+                    {statusConfig.label}
+                  </div>
+                </CardHeader>
 
-            <CardContent className="pb-3 px-4">
-              <div className="flex justify-between text-xs text-gray-400 mb-1.5">
-                <span>生长进度 (第{batch.dayCount}天)</span>
-                <span>{batch.progress}%</span>
-              </div>
-              <Progress
-                value={batch.progress}
-                className={`h-2 ${batch.status === 'warning'
-                  ? '**:data-[slot=progress-indicator]:bg-orange-400'
-                  : '**:data-[slot=progress-indicator]:bg-green-500'
-                  }`}
-              />
+                {/* 卡片内容：核心档案信息 */}
+                <CardContent className="pt-4 pb-4 px-4">
+                  <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-sm">
+                    {/* 第一行：品种 & 地块 */}
+                    <div className="flex items-center text-gray-600">
+                      <Sprout className="w-4 h-4 mr-2 text-green-600 shrink-0" />
+                      <span className="font-medium text-gray-900">
+                        {batch.variety}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <MapPin className="w-4 h-4 mr-2 text-blue-500 shrink-0" />
+                      <span className="truncate">{batch.location}</span>
+                    </div>
 
-              <div className="mt-3 bg-gray-50 p-2 rounded flex items-center justify-between text-xs">
-                <span className="text-gray-400">最近操作:</span>
-                <span className="font-medium text-gray-600">
-                  {batch.lastAction}
-                </span>
-              </div>
-            </CardContent>
+                    {/* 第二行：播种时间 */}
+                    <div className="flex items-center text-gray-500 col-span-2">
+                      <CalendarDays className="w-4 h-4 mr-2 text-gray-400 shrink-0" />
+                      <span>播种日期: {sowingDate}</span>
+                    </div>
+                  </div>
 
-            <CardFooter className="bg-gray-50/50 py-2 px-4 flex justify-between items-center border-t border-gray-100">
-              <span className="text-[10px] text-gray-400">ID: {batch.id}</span>
-              <div className="flex items-center text-xs text-green-600 font-medium">
-                去记录 <ChevronRight className="w-3 h-3 ml-1" />
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
+                  {/* 重点：最近农事记录展示区 */}
+                  <div className="mt-4 bg-orange-50/50 rounded-lg p-3 border border-orange-100">
+                    <div className="flex items-center text-xs text-orange-800 mb-1 font-semibold">
+                      <History className="w-3.5 h-3.5 mr-1.5" />
+                      最新溯源动态
+                    </div>
+                    {lastRecord ? (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-900 font-medium">
+                          {getTypeName(lastRecord.action_type)}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                          {format(
+                            new Date(lastRecord.recorded_at as Date),
+                            "MM-dd HH:mm",
+                          )}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-400 italic">
+                        暂无操作记录，请尽快录入
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+
+                <CardFooter className="bg-gray-50 py-2 px-4 flex gap-2">
+                  <Link href={`/admin/add-record?batchId=${batch.id}`} className="flex-1">
+                    <Button variant="default" className="w-full bg-green-600 hover:bg-green-700 h-9 text-xs">
+                      <Plus className="w-3.5 h-3.5 mr-1" /> 录入农事
+                    </Button>
+                  </Link>
+
+
+                  <Link href={`/trace/${batch.id}`} target="_blank" className="flex-1">
+                    <Button variant="outline" className="w-full h-9 text-xs bg-white text-gray-600">
+                      <QrCode className="w-3.5 h-3.5 mr-1" /> 查看溯源页
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            );
+          })
+        )}
       </div>
     </div>
   );
