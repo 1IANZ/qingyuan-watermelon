@@ -26,6 +26,7 @@ model batches {
   status         String?   @default("growing")
   quality_report Json?     @default("{}")
   created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  user_id        String?
   records        records[]
 }
 

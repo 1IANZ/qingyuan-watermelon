@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
 
 export type CreateBatchState = {
@@ -14,6 +14,12 @@ export async function createBatchAction(
 	_prevState: CreateBatchState,
 	formData: FormData,
 ): Promise<CreateBatchState> {
+	const user = await getCurrentUser();
+
+	if (!user) {
+		return { message: "登录已过期，请重新登录", success: false };
+	}
+
 	const varietyId = formData.get("varietyId") as string;
 	const locationId = formData.get("locationId") as string;
 	const sowingDate = formData.get("sowingDate") as string;
@@ -31,25 +37,18 @@ export async function createBatchAction(
 		return { message: "选择的数据无效，请刷新页面重试", success: false };
 	}
 
-	// 4. 生成批次号
 	const batchNo = `KL-${Date.now().toString().slice(-4)}`;
 
-	// 5. 获取当前用户
-	const cookieStore = await cookies();
-	const userId = cookieStore.get("auth_token")?.value;
-	if (!userId) {
-		return { message: "登录已过期", success: false };
-	}
-
 	try {
-		// 6. 写入数据库
+		// 3. 写入数据库
 		await db.batches.create({
 			data: {
 				batch_no: batchNo,
-				variety: varietyObj.name, // 存查到的名字
-				location: locationObj.name, // 存查到的名字
+				variety: varietyObj.name,
+				location: locationObj.name,
 				sowing_date: new Date(sowingDate),
 				status: "growing",
+				user_id: user.userId,
 			},
 		});
 
@@ -59,6 +58,6 @@ export async function createBatchAction(
 		return { message: "创建失败，请重试", success: false };
 	}
 
-	// 7. 跳转
+	// 跳转
 	redirect("/admin");
 }
