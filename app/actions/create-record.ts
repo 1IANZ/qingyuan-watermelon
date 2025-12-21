@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { supabase } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase";
 
 export type RecordState = {
 	message: string;
@@ -60,7 +60,6 @@ export async function createRecordAction(
 				.from("watermelon")
 				.getPublicUrl(fileName);
 
-			console.log("上传成功，链接:", publicData.publicUrl);
 			imageUrls.push(publicData.publicUrl);
 		} catch (error) {
 			console.error("上传发生未知错误:", error);

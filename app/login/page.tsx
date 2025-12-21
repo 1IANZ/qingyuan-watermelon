@@ -16,7 +16,6 @@ import { loginAction } from "../actions/login";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
-
   return (
     <Button
       type="submit"
@@ -46,9 +45,7 @@ export default function LoginPage() {
           <CardDescription>清苑西瓜溯源与品质协同监管系统</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* formAction 绑定到 form 上 */}
           <form action={formAction} className="space-y-4">
-            {/* 错误提示区 */}
             {state?.message && (
               <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md flex items-center">
                 <AlertCircle className="w-4 h-4 mr-2" />
@@ -59,25 +56,14 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  name="username"
-                  placeholder="用户名 / 手机号"
-                  className="pl-9"
-                  required
-                />
+                <Input name="username" placeholder="用户名 / 手机号" className="pl-9" required />
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  name="password"
-                  type="password"
-                  placeholder="密码"
-                  className="pl-9"
-                  required
-                />
+                <Input name="password" type="password" placeholder="密码" className="pl-9" required />
               </div>
             </div>
 
