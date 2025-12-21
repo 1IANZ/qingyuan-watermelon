@@ -12,8 +12,10 @@ import {
   Save,
   Tag,
   Truck,
+  X,
 } from "lucide-react";
-import { useActionState, useState } from "react";
+import Image from "next/image";
+import { useActionState, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   createRecordAction,
@@ -26,7 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { batches } from "@/lib/generated/prisma/client";
 
-// 配置菜单
+// --- UI 配置 (补全了完整的数组) ---
 const ACTION_TYPES = [
   {
     id: "water",
@@ -75,6 +77,7 @@ const ACTION_TYPES = [
   },
 ];
 
+// 提交按钮组件
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -101,11 +104,17 @@ const initialState: RecordState = {
   success: false,
 };
 
+// --- 主组件 ---
 export default function RecordForm({ batch }: { batch: batches }) {
   const [state, formAction] = useActionState(createRecordAction, initialState);
 
   const [selectedType, setSelectedType] = useState(ACTION_TYPES[0].id);
   const [description, setDescription] = useState("");
+
+  // 🟢 1. 图片预览状态
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // 🟢 2. 引用隐藏的文件输入框
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentTypeConfig =
     ACTION_TYPES.find((t) => t.id === selectedType) || ACTION_TYPES[0];
@@ -115,13 +124,36 @@ export default function RecordForm({ batch }: { batch: batches }) {
     setDescription((prev) => (prev ? `${prev}, ${tag}` : tag));
   };
 
+  // 🟢 3. 处理文件选择 (核心逻辑)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 创建本地预览 URL (blob:http://...)
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  // 🟢 4. 点击按钮 -> 触发隐藏的 input 点击
+  const handleCameraClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // 🟢 5. 删除已选图片
+  const handleRemoveImage = () => {
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // 清空 input 的值，允许重复选择同一张图
+    }
+  };
+
   return (
     <form action={formAction} className="space-y-6 max-w-md mx-auto">
-      {/* 隐藏域：必须把 ID 传回去 */}
+      {/* 隐藏域：将 batchId 和 actionType 传给 Server Action */}
       <input type="hidden" name="batchId" value={batch.id} />
       <input type="hidden" name="actionType" value={selectedType} />
 
-      {/* 顶部展示卡片 */}
+      {/* 顶部：档案信息 */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div className="flex justify-between items-start mb-3">
           <div>
@@ -150,7 +182,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
         </div>
       </div>
 
-      {/* 错误信息 */}
+      {/* 错误提示 */}
       {state.message && !state.success && (
         <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center">
           <AlertCircle className="w-4 h-4 mr-2" />
@@ -158,7 +190,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
         </div>
       )}
 
-      {/* 图标选择区 */}
+      {/* 1. 操作类型选择 */}
       <section>
         <Label className="mb-3 block text-gray-700">1. 选择操作类型</Label>
         <div className="grid grid-cols-4 gap-3">
@@ -192,7 +224,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
         </div>
       </section>
 
-      {/* 详情填写区 */}
+      {/* 2. 详情填写 & 图片上传 */}
       <Card className="border-none shadow-sm overflow-hidden">
         <CardHeader className="pb-3 border-b border-gray-100 bg-white">
           <div className="flex items-center gap-3">
@@ -213,6 +245,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
         </CardHeader>
 
         <CardContent className="space-y-4 pt-4">
+          {/* 快捷标签 */}
           <div className="flex flex-wrap gap-2">
             {currentTypeConfig.tags.map((tag) => (
               <Badge
@@ -226,6 +259,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
             ))}
           </div>
 
+          {/* 文本域 */}
           <div className="relative">
             <Textarea
               name="description"
@@ -237,15 +271,50 @@ export default function RecordForm({ batch }: { batch: batches }) {
             />
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full text-gray-500 border-dashed border-2 h-12 hover:bg-gray-50 hover:text-green-600 hover:border-green-200 transition-all"
-            onClick={() => alert("暂未开通图片上传")}
-          >
-            <Camera className="mr-2 w-4 h-4" />
-            添加现场照片 (可选)
-          </Button>
+          {/* 🟢 6. 图片上传区域 */}
+          <div>
+            {/* 真正的文件 Input (隐藏) */}
+            <input
+              type="file"
+              name="imageFile" // 这个 name 很重要，Server Action 会用到
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              capture="environment" // 核心属性：在手机上优先调用后置摄像头
+              onChange={handleFileChange}
+            />
+
+            {previewUrl ? (
+              // 状态 A：已选择图片，显示预览
+              <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200 group">
+                <Image
+                  src={previewUrl}
+                  alt="预览"
+                  fill
+                  className="object-cover"
+                />
+                {/* 删除按钮 */}
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full hover:bg-red-500 transition-colors backdrop-blur-sm"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              // 状态 B：未选择，显示上传按钮
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full text-gray-500 border-dashed border-2 h-12 hover:bg-gray-50 hover:text-green-600 hover:border-green-200 transition-all"
+                onClick={handleCameraClick}
+              >
+                <Camera className="mr-2 w-4 h-4" />
+                点击拍照 / 上传图片
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 

@@ -23,7 +23,6 @@ export default async function AdminAddRecordPage({
     );
   }
 
-  // 查库：获取真实批次数据
   const batch = await db.batches.findUnique({
     where: { id: batchId },
   });
@@ -45,7 +44,6 @@ export default async function AdminAddRecordPage({
         <h1 className="text-xl font-bold text-gray-900">新增农事记录</h1>
       </div>
 
-      {/* 把查到的 batch 传给 Client 组件 */}
       <RecordForm batch={batch} />
     </div>
   );

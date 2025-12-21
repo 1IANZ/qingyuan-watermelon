@@ -153,6 +153,7 @@ export default async function TracePage({
               </div>
             </div>
 
+            {/* 二维码区域 */}
             <div className="flex justify-end items-center">
               <TraceQRCode batchNo={batch.batch_no} />
             </div>
@@ -203,7 +204,9 @@ export default async function TracePage({
                 <div
                   className={`absolute -left-2.25 top-0 w-4 h-4 rounded-full border-2 border-white shadow-sm ${record.action_type === "harvest" ? "bg-green-600" : "bg-gray-300"}`}
                 />
+
                 <div className="flex flex-col">
+                  {/* 时间 */}
                   <div className="flex items-center text-xs text-gray-400 mb-1">
                     <Clock className="w-3 h-3 mr-1" />
                     {format(
@@ -211,9 +214,13 @@ export default async function TracePage({
                       "MM-dd HH:mm",
                     )}
                   </div>
+
+                  {/* 标题 */}
                   <span className="font-bold text-gray-800 text-base flex items-center">
                     {getTypeName(record.action_type)}
                   </span>
+
+                  {/* 记录内容卡片 */}
                   <div className="mt-2 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
                     <div className="flex items-start gap-3">
                       <div
@@ -221,10 +228,31 @@ export default async function TracePage({
                       >
                         <Icon className="w-4 h-4" />
                       </div>
-                      <div>
+
+                      <div className="w-full">
                         <p className="text-sm text-gray-700 leading-relaxed">
                           {record.description}
                         </p>
+
+                        {record.images && record.images.length > 0 && (
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            {/* key 使用 imgUrl 保证唯一性 */}
+                            {record.images.map((imgUrl) => (
+                              <div
+                                key={imgUrl}
+                                className="relative h-24 w-full rounded-md overflow-hidden border border-gray-100"
+                              >
+                                <Image
+                                  src={imgUrl}
+                                  alt="农事记录图片"
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         <p className="text-xs text-gray-400 mt-2 flex items-center">
                           <User className="w-3 h-3 mr-1" />
                           操作人: {record.operator}
@@ -240,7 +268,7 @@ export default async function TracePage({
 
         <div className="text-center mt-10 pb-10">
           <p className="text-xs text-gray-300">清苑区农业农村局 · 监管认证</p>
-          <p className="text-[10px] text-gray-200 mt-1">溯源码: {batch.id}</p>
+          <p className="text-[10px] text-gray-200 mt-1">溯源码: {id}</p>
         </div>
       </div>
     </div>
