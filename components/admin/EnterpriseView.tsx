@@ -2,7 +2,9 @@ import { format } from "date-fns";
 import {
   AlertCircle,
   CheckCircle2,
+  ExternalLink,
   FileBadge,
+  FileCheck,
   FlaskConical,
   Search,
 } from "lucide-react";
@@ -12,16 +14,54 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { db } from "@/lib/db";
 
-export default async function EnterpriseView() {
+interface QualityReport {
+  result?: "PASS" | "FAIL" | string;
+  sugar?: string;
+  pesticide?: string;
+  inspector?: string;
+  date?: string;
+}
 
-  const batches = await db.batches.findMany({
-    orderBy: { created_at: "desc" },
-    take: 10,
+export default async function EnterpriseView() {
+  const [recentBatches, totalCount] = await Promise.all([
+    db.batches.findMany({
+      orderBy: { created_at: "desc" },
+      take: 50,
+    }),
+    db.batches.count(),
+  ]);
+
+
+  let pendingCount = 0;
+  let passedCount = 0;
+  let failedCount = 0;
+  let testedCount = 0;
+
+  recentBatches.forEach((batch) => {
+    const report = batch.quality_report as unknown as QualityReport;
+
+    const hasReport = report?.result;
+
+    if (!hasReport) {
+      pendingCount++;
+    } else {
+      testedCount++;
+      if (report.result === "FAIL" || report.result === "不合格") {
+        failedCount++;
+      } else {
+        passedCount++;
+      }
+    }
   });
+
+  const passRate = testedCount > 0
+    ? ((passedCount / testedCount) * 100).toFixed(1)
+    : "100.0";
+
+  const displayBatches = recentBatches.slice(0, 10);
 
   return (
     <div className="space-y-6">
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-blue-50 border-blue-100 shadow-sm">
           <CardContent className="p-6 flex items-center gap-4">
@@ -29,42 +69,47 @@ export default async function EnterpriseView() {
               <FlaskConical className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-blue-900">12</div>
+              <div className="text-2xl font-bold text-blue-900">
+                {pendingCount}
+              </div>
               <div className="text-xs text-blue-600 font-medium">
-                待检测批次
+                待检测批次 (实时)
               </div>
             </div>
           </CardContent>
         </Card>
+
         <Card className="bg-green-50 border-green-100 shadow-sm">
           <CardContent className="p-6 flex items-center gap-4">
             <div className="bg-green-100 p-3 rounded-full">
               <CheckCircle2 className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-900">98.5%</div>
+              <div className="text-2xl font-bold text-green-900">
+                {passRate}%
+              </div>
               <div className="text-xs text-green-600 font-medium">
-                本月合格率
+                近期样本合格率
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-red-50 border-red-100 shadow-sm">
+
+        <Card className={`${failedCount > 0 ? "bg-red-100 animate-pulse" : "bg-red-50"} border-red-100 shadow-sm`}>
           <CardContent className="p-6 flex items-center gap-4">
             <div className="bg-red-100 p-3 rounded-full">
-              <AlertCircle className="w-6 h-6 text-red-600" />
+              <AlertCircle className={`w-6 h-6 ${failedCount > 0 ? "text-red-700" : "text-red-600"}`} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-red-900">0</div>
+              <div className="text-2xl font-bold text-red-900">{failedCount}</div>
               <div className="text-xs text-red-600 font-medium">
-                严重质量告警
+                质量检测不合格
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* 2. 批次检索与列表 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
           <h3 className="font-bold text-gray-800 flex items-center gap-2">
@@ -82,52 +127,83 @@ export default async function EnterpriseView() {
         </div>
 
         <div className="divide-y divide-gray-100">
-          {batches.map((batch) => (
-            <div
-              key={batch.id}
-              className="p-4 hover:bg-blue-50/30 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono font-bold text-gray-700">
-                    {batch.batch_no}
-                  </span>
-                  <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded">
-                    {batch.variety}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-500">
-                  创建于:{" "}
-                  {format(new Date(batch.created_at as Date), "yyyy-MM-dd HH:mm")}
-                </div>
-              </div>
+          {displayBatches.map((batch) => {
 
-              <div className="flex items-center gap-3">
-                <div className="text-right mr-4 hidden sm:block">
-                  <div className="text-xs text-gray-400">检测状态</div>
-                  <div className="text-sm font-medium text-orange-500">
-                    待录入
+            const report = batch.quality_report as unknown as QualityReport;
+
+            const hasReport = !!report?.result;
+
+            return (
+              <div
+                key={batch.id}
+                className="p-4 hover:bg-blue-50/30 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
+
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-mono font-bold text-gray-700">
+                      {batch.batch_no}
+                    </span>
+                    <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded">
+                      {batch.variety}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    创建于:{" "}
+                    {format(
+                      new Date(batch.created_at as Date),
+                      "yyyy-MM-dd HH:mm",
+                    )}
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                >
-                  <FlaskConical className="w-4 h-4 mr-2" />
-                  录入检测
-                </Button>
-                <Link href={`/trace/${batch.batch_no}`}>
-                  <Button size="sm" variant="ghost" className="text-gray-500">
-                    查看
-                  </Button>
-                </Link>
+
+                <div className="flex items-center gap-3">
+                  <div className="text-right mr-4 hidden sm:block">
+                    <div className="text-xs text-gray-400">检测状态</div>
+                    {hasReport ? (
+                      <div className="text-sm font-medium text-green-600 flex items-center justify-end gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> 已检测
+                      </div>
+                    ) : (
+                      <div className="text-sm font-medium text-orange-500 flex items-center justify-end gap-1">
+                        <AlertCircle className="w-3 h-3" /> 待录入
+                      </div>
+                    )}
+                  </div>
+
+                  <Link href={`/admin/add-quality?batchId=${batch.id}`}>
+                    <Button
+                      size="sm"
+                      variant={hasReport ? "secondary" : "default"}
+                      disabled={hasReport}
+                      className={
+                        !hasReport ? "bg-blue-600 hover:bg-blue-700" : ""
+                      }
+                    >
+                      {hasReport ? (
+                        <>
+                          <FileCheck className="w-4 h-4 mr-2" /> 已录入
+                        </>
+                      ) : (
+                        <>
+                          <FlaskConical className="w-4 h-4 mr-2" /> 录入检测
+                        </>
+                      )}
+                    </Button>
+                  </Link>
+
+                  <Link href={`/trace/${batch.batch_no}`}>
+                    <Button size="sm" variant="ghost" className="text-gray-500">
+                      <ExternalLink className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <div className="p-4 bg-gray-50 text-center text-xs text-gray-500 border-t border-gray-200">
-          显示最近 {batches.length} 条记录
+          统计样本: 最近 {recentBatches.length} 条 | 数据库总量: {totalCount} 条
         </div>
       </div>
     </div>

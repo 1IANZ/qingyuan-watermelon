@@ -137,7 +137,6 @@ export default async function GovView() {
                 >
                   <Link
                     href={`/trace/${batch.batch_no}`}
-                    target="_blank"
                     title="查看溯源详情"
                   >
                     <ExternalLink className="w-4 h-4 mr-1" />

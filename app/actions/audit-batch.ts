@@ -1,11 +1,10 @@
 "use server";
 
-import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
 
 export async function approveBatchAction(batchId: string) {
   try {
-
     await db.batches.update({
       where: { id: batchId },
       data: { status: "approved" },

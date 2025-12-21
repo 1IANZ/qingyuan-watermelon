@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/card";
 import { db } from "@/lib/db";
 
-// 1. 辅助函数：将英文操作类型转为中文
 function getTypeName(type: string) {
   const map: Record<string, string> = {
     water: "灌溉",
@@ -142,8 +141,6 @@ export default async function FarmerView({ userId }: { userId: string }) {
                       {format(new Date(batch.sowing_date), "yyyy-MM-dd")}
                     </div>
                   </div>
-
-                  {/* 最新动态摘要 */}
                   <div className="sm:col-span-3 bg-orange-50/50 rounded-lg p-3 text-sm mt-2 flex items-center justify-between border border-orange-100">
                     <div className="flex items-center gap-2 text-gray-700">
                       <History className="w-4 h-4 text-orange-500" />
@@ -161,7 +158,6 @@ export default async function FarmerView({ userId }: { userId: string }) {
                     </div>
                   </div>
                 </CardContent>
-
                 <CardFooter className="bg-gray-50/50 py-3 gap-3">
                   <Link
                     href={`/admin/add-record?batchId=${batch.id}`}
@@ -171,12 +167,9 @@ export default async function FarmerView({ userId }: { userId: string }) {
                       <Plus className="w-4 h-4 mr-2" /> 录入农事
                     </Button>
                   </Link>
-
-                  {/* 查看溯源页：新窗口打开 target="_blank" */}
                   <Link
                     href={`/trace/${batch.batch_no}`}
                     className="flex-1"
-                    target="_blank"
                   >
                     <Button
                       variant="outline"

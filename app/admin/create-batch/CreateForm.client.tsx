@@ -135,7 +135,6 @@ export default function CreateForm({ varieties, locations }: Props) {
             <input type="hidden" name="locationId" value={location} />
           </div>
 
-          {/* 3. 播种时间 (Shadcn Popover) */}
           <div className="space-y-2 flex flex-col">
             <Label>播种/定植日期</Label>
 

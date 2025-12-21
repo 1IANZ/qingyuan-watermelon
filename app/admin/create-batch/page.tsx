@@ -17,7 +17,6 @@ export default async function CreateBatchPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      {/* 顶部导航 */}
       <div className="flex items-center mb-6">
         <Link href="/admin">
           <Button variant="ghost" size="icon" className="-ml-2 mr-1">
