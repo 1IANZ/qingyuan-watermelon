@@ -7,16 +7,18 @@ import {
   Leaf,
   MapPin,
   PenTool,
-  QrCode,
   Sprout,
   Truck,
   User,
 } from "lucide-react";
 import Image from "next/image";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import TraceQRCode from "@/components/ui/TraceQRCode.client";
 import { db } from "@/lib/db";
 
+// --- Helper 函数保持不变 ---
 function getActionIcon(type: string) {
   switch (type) {
     case "water":
@@ -58,19 +60,16 @@ function getTypeName(type: string) {
   return map[type] || "农事操作";
 }
 
-
 export default async function TracePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-
   const { id } = await params;
 
+  // 1. 查库
   const batch = await db.batches.findFirst({
-    where: {
-      batch_no: id
-    },
+    where: { batch_no: id },
     include: {
       records: {
         orderBy: { recorded_at: "desc" },
@@ -78,6 +77,7 @@ export default async function TracePage({
     },
   });
 
+  // 404 处理
   if (!batch) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
@@ -87,25 +87,28 @@ export default async function TracePage({
           </div>
           <h1 className="text-xl font-bold text-gray-900">未找到该批次档案</h1>
           <p className="text-gray-500 max-w-xs mx-auto text-sm">
-            系统无法识别溯源码 <span className="font-mono font-bold text-gray-700 mx-1">{id}</span>
-            <br />请检查标签上的编号是否输入正确。
+            溯源码{" "}
+            <span className="font-mono font-bold text-gray-700">{id}</span>{" "}
+            不存在
           </p>
-          <a href="/" className="inline-block mt-4 px-6 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors">
-            返回首页重新查询
+          <a
+            href="/"
+            className="inline-block mt-4 px-6 py-2 bg-green-600 text-white rounded-lg text-sm"
+          >
+            返回首页
           </a>
         </div>
       </div>
     );
   }
 
-  // 3. 页面顶部的背景图 (Unsplash 图片)
+  // 静态图
   const bgImage =
     "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=800";
 
   return (
     <div className="min-h-screen bg-gray-50 max-w-md mx-auto shadow-2xl overflow-hidden relative">
-
-      {/* --- 顶部：沉浸式头图 --- */}
+      {/* 顶部头图 */}
       <div className="relative h-64 bg-gray-900">
         <Image
           src={bgImage}
@@ -134,27 +137,33 @@ export default async function TracePage({
       <div className="relative -mt-6 px-4 z-10">
         <Card className="shadow-lg border-none">
           <CardContent className="pt-6 pb-6 grid grid-cols-2 gap-y-4">
-            <div>
-              <div className="text-xs text-gray-400 mb-0.5">溯源批次号</div>
-              <div className="font-mono font-bold text-gray-800 text-lg">
-                {batch.batch_no}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-400 mb-0.5">播种日期</div>
-              <div className="font-medium text-gray-800">
-                {format(new Date(batch.sowing_date), "yyyy年MM月dd日")}
-              </div>
-            </div>
-            <div className="col-span-2 pt-4 border-t border-gray-100 flex items-center justify-between">
+            {/* 左侧信息 */}
+            <div className="space-y-4">
               <div>
-                <div className="text-xs text-gray-400 mb-0.5">认证主体</div>
-                <div className="font-medium text-gray-800 flex items-center">
-                  <User className="w-3.5 h-3.5 mr-1 text-green-600" />
-                  绿源精品西瓜合作社
+                <div className="text-xs text-gray-400 mb-0.5">溯源批次号</div>
+                <div className="font-mono font-bold text-gray-800 text-lg">
+                  {batch.batch_no}
                 </div>
               </div>
-              <QrCode className="w-8 h-8 text-gray-300" />
+              <div>
+                <div className="text-xs text-gray-400 mb-0.5">播种日期</div>
+                <div className="font-medium text-gray-800">
+                  {format(new Date(batch.sowing_date), "yyyy年MM月dd日")}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end items-center">
+              <TraceQRCode batchNo={batch.batch_no} />
+            </div>
+
+            {/* 底部认证主体 */}
+            <div className="col-span-2 pt-4 border-t border-gray-100 mt-2">
+              <div className="text-xs text-gray-400 mb-0.5">认证主体</div>
+              <div className="font-medium text-gray-800 flex items-center">
+                <User className="w-3.5 h-3.5 mr-1 text-green-600" />
+                绿源精品西瓜合作社
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -168,8 +177,7 @@ export default async function TracePage({
         </h2>
 
         <div className="relative border-l-2 border-green-200 ml-3 space-y-8 pb-10">
-
-          {/* 1. 起点：播种 */}
+          {/* 起点：播种 */}
           <div className="relative pl-8">
             <div className="absolute -left-2.25 top-0 w-4 h-4 rounded-full bg-green-500 border-4 border-white shadow-sm" />
             <div className="flex flex-col">
@@ -185,7 +193,7 @@ export default async function TracePage({
             </div>
           </div>
 
-          {/* 2. 中间：动态记录列表 */}
+          {/* 动态记录 */}
           {batch.records.map((record) => {
             const Icon = getActionIcon(record.action_type);
             const colorClass = getActionColor(record.action_type);
@@ -195,9 +203,7 @@ export default async function TracePage({
                 <div
                   className={`absolute -left-2.25 top-0 w-4 h-4 rounded-full border-2 border-white shadow-sm ${record.action_type === "harvest" ? "bg-green-600" : "bg-gray-300"}`}
                 />
-
                 <div className="flex flex-col">
-                  {/* 时间 */}
                   <div className="flex items-center text-xs text-gray-400 mb-1">
                     <Clock className="w-3 h-3 mr-1" />
                     {format(
@@ -205,13 +211,9 @@ export default async function TracePage({
                       "MM-dd HH:mm",
                     )}
                   </div>
-
-                  {/* 标题 */}
                   <span className="font-bold text-gray-800 text-base flex items-center">
                     {getTypeName(record.action_type)}
                   </span>
-
-                  {/* 详情卡片 */}
                   <div className="mt-2 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
                     <div className="flex items-start gap-3">
                       <div
@@ -236,10 +238,9 @@ export default async function TracePage({
           })}
         </div>
 
-        {/* 底部版权 */}
         <div className="text-center mt-10 pb-10">
           <p className="text-xs text-gray-300">清苑区农业农村局 · 监管认证</p>
-          <p className="text-[10px] text-gray-200 mt-1">溯源码: {id}</p>
+          <p className="text-[10px] text-gray-200 mt-1">溯源码: {batch.id}</p>
         </div>
       </div>
     </div>
