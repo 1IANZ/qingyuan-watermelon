@@ -82,7 +82,7 @@ export default async function TracePage({
       inspections: {
         orderBy: { created_at: "asc" },
       },
-      feedbacks: { // Added feedbacks include
+      feedbacks: {
         orderBy: { created_at: "desc" },
       },
     },
@@ -91,7 +91,6 @@ export default async function TracePage({
   if (!batch) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-        {/* ... (Keep existing Error UI) ... */}
         <div className="text-center space-y-4">
           <div className="bg-gray-100 p-4 rounded-full inline-block">
             <Sprout className="w-12 h-12 text-gray-400" />
@@ -108,14 +107,11 @@ export default async function TracePage({
     );
   }
 
-  // Determine Overall Status
   const isApproved = batch.status === "approved";
   const isRejected = batch.status === "rejected";
 
-  // Use ANY fail in inspections to mark as Warning if not already rejected
   const hasFail = batch.inspections.some((i) => i.result === "fail");
 
-  // Gradient based on status
   const headerGradient =
     isRejected || hasFail
       ? "from-red-600 to-red-800"
@@ -130,7 +126,6 @@ export default async function TracePage({
 
   return (
     <div className="min-h-screen bg-gray-50 max-w-md mx-auto shadow-2xl overflow-hidden relative pb-10">
-
       {(isRejected || hasFail) && (
         <div className="bg-red-600 text-white px-4 py-3 flex items-start gap-3 relative z-50 animate-in slide-in-from-top duration-500">
           <ShieldAlert className="w-6 h-6 shrink-0 animate-pulse text-yellow-300" />
@@ -143,7 +138,7 @@ export default async function TracePage({
             </p>
           </div>
         </div>
-      )}`
+      )}
 
       <div className={cn("relative h-64 overflow-hidden bg-linear-to-br transition-colors duration-500", headerGradient)}>
         <Sprout className="absolute -right-10 -top-10 w-40 h-40 text-white/10 rotate-12" />
