@@ -14,23 +14,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { db } from "@/lib/db";
 
-interface QualityReport {
-  result?: "PASS" | "FAIL" | string;
-  sugar?: string;
-  pesticide?: string;
-  inspector?: string;
-  date?: string;
-}
 
 export default async function EnterpriseView() {
   const [recentBatches, totalCount] = await Promise.all([
     db.batches.findMany({
       orderBy: { created_at: "desc" },
       take: 50,
+      include: {
+        inspections: {
+          orderBy: { created_at: "desc" },
+          take: 1,
+        },
+      },
     }),
     db.batches.count(),
   ]);
-
 
   let pendingCount = 0;
   let passedCount = 0;
@@ -38,15 +36,14 @@ export default async function EnterpriseView() {
   let testedCount = 0;
 
   recentBatches.forEach((batch) => {
-    const report = batch.quality_report as unknown as QualityReport;
+    // Check latest inspection in the list
+    const lastInspection = batch.inspections[0];
 
-    const hasReport = report?.result;
-
-    if (!hasReport) {
+    if (!lastInspection) {
       pendingCount++;
     } else {
       testedCount++;
-      if (report.result === "FAIL" || report.result === "不合格") {
+      if (lastInspection.result === "fail" || lastInspection.result === "warning") {
         failedCount++;
       } else {
         passedCount++;
@@ -54,9 +51,10 @@ export default async function EnterpriseView() {
     }
   });
 
-  const passRate = testedCount > 0
-    ? ((passedCount / testedCount) * 100).toFixed(1)
-    : "100.0";
+  const passRate =
+    testedCount > 0
+      ? ((passedCount / testedCount) * 100).toFixed(1)
+      : "100.0";
 
   const displayBatches = recentBatches.slice(0, 10);
 
@@ -128,10 +126,8 @@ export default async function EnterpriseView() {
 
         <div className="divide-y divide-gray-100">
           {displayBatches.map((batch) => {
-
-            const report = batch.quality_report as unknown as QualityReport;
-
-            const hasReport = !!report?.result;
+            const lastInspection = batch.inspections[0];
+            const hasReport = !!lastInspection;
 
             return (
               <div
@@ -171,18 +167,17 @@ export default async function EnterpriseView() {
                     )}
                   </div>
 
-                  <Link href={`/admin/add-quality?batchId=${batch.id}`}>
+                  <Link href={`/admin/quality/${batch.id}`}>
                     <Button
                       size="sm"
                       variant={hasReport ? "secondary" : "default"}
-                      disabled={hasReport}
                       className={
                         !hasReport ? "bg-blue-600 hover:bg-blue-700" : ""
                       }
                     >
                       {hasReport ? (
                         <>
-                          <FileCheck className="w-4 h-4 mr-2" /> 已录入
+                          <FileCheck className="w-4 h-4 mr-2" /> 管理检测 ({batch.inspections.length})
                         </>
                       ) : (
                         <>

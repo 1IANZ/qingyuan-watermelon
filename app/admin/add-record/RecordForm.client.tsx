@@ -67,6 +67,24 @@ const ACTION_TYPES = [
     tags: ["首批采摘", "分批采摘", "测糖合格", "挑选装箱"],
   },
   {
+    id: "transport",
+    label: "流通运输",
+    icon: Truck,
+    color: "text-orange-500",
+    bgColor: "bg-orange-50",
+    borderColor: "border-orange-200",
+    tags: ["装车发货", "冷链运输", "到达集散地", "终端配送"],
+  },
+  {
+    id: "storage",
+    label: "仓储",
+    icon: MapPin,
+    color: "text-blue-500",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+    tags: ["入库", "出库", "温湿度检测", "库存盘点"],
+  },
+  {
     id: "custom",
     label: "其他",
     icon: PenTool,
@@ -258,6 +276,57 @@ export default function RecordForm({ batch }: { batch: batches }) {
               </Badge>
             ))}
           </div>
+
+          {/* 动态表单字段 */}
+          {selectedType === "transport" && (
+            <div className="grid grid-cols-2 gap-3 mb-3 bg-orange-50 p-3 rounded-lg border border-orange-100">
+              <div className="space-y-1">
+                <Label className="text-xs text-orange-700">车牌号</Label>
+                <input name="vehicle_no" placeholder="例如：京A88888" className="w-full text-sm p-1.5 rounded border border-orange-200" onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) setDescription(prev => {
+                    const clean = prev.replace(/【车牌.*?】/g, '');
+                    return `【车牌:${val}】` + clean;
+                  })
+                }} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-orange-700">司机/负责人</Label>
+                <input name="driver_name" placeholder="姓名" className="w-full text-sm p-1.5 rounded border border-orange-200" onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) setDescription(prev => {
+                    const clean = prev.replace(/【司机.*?】/g, '');
+                    return clean + `【司机:${val}】`;
+                  })
+                }} />
+              </div>
+            </div>
+          )}
+
+          {selectedType === "storage" && (
+            <div className="grid grid-cols-2 gap-3 mb-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
+              <div className="space-y-1">
+                <Label className="text-xs text-blue-700">仓库名称</Label>
+                <input name="warehouse" placeholder="例如：1号冷库" className="w-full text-sm p-1.5 rounded border border-blue-200" onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) setDescription(prev => {
+                    const clean = prev.replace(/【仓库.*?】/g, '');
+                    return `【仓库:${val}】` + clean;
+                  })
+                }} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-blue-700">环境温度</Label>
+                <input name="temperature" placeholder="例如：18℃" className="w-full text-sm p-1.5 rounded border border-blue-200" onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) setDescription(prev => {
+                    const clean = prev.replace(/【温度.*?】/g, '');
+                    return clean + `【温度:${val}】`;
+                  })
+                }} />
+              </div>
+            </div>
+          )}
 
           {/* 文本域 */}
           <div className="relative">

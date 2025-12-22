@@ -9,7 +9,7 @@ import {
   type CreateBatchState,
   createBatchAction,
 } from "@/app/actions/create-batch";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -53,10 +53,8 @@ const initialState: CreateBatchState = {
 export default function CreateForm({ varieties, locations }: Props) {
   const [state, formAction] = useActionState(createBatchAction, initialState);
 
-  // 本地状态
   const [variety, setVariety] = useState("");
   const [location, setLocation] = useState("");
-  // 日期默认今天
   const [date, setDate] = useState<Date | undefined>(new Date());
 
   return (
@@ -139,24 +137,22 @@ export default function CreateForm({ varieties, locations }: Props) {
             <Label>播种/定植日期</Label>
 
             <Popover>
-              <PopoverTrigger>
-                <Button
-                  type="button"
-                  variant={"outline"}
-                  className={cn(
-                    "w-full pl-3 text-left font-normal h-10",
-                    !date && "text-muted-foreground",
-                  )}
-                >
-                  {date ? (
-                    format(date, "PPP", { locale: zhCN })
-                  ) : (
-                    <span>选择日期</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
+              <PopoverTrigger
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "w-full pl-3 text-left font-normal h-10",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                {date ? (
+                  format(date, "PPP", { locale: zhCN })
+                ) : (
+                  <span>选择日期</span>
+                )}
+                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
+
                 <Calendar
                   mode="single"
                   selected={date}

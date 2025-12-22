@@ -1,3 +1,4 @@
+
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,6 @@ export default async function CreateBatchPage() {
       </div>
 
       <div className="max-w-md mx-auto">
-        {/* 2. 把数据库查出来的数据传给 Client 组件 */}
         <CreateForm varieties={varieties} locations={locations} />
       </div>
     </div>

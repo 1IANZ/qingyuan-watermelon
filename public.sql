@@ -12,7 +12,7 @@
  Target Server Version : 180001 (180001)
  File Encoding         : 65001
 
- Date: 21/12/2025 21:25:18
+ Date: 22/12/2025 21:25:18
 */
 
 
@@ -82,7 +82,7 @@ CREATE TABLE "public"."batches" (
   "location" text COLLATE "pg_catalog"."default" NOT NULL,
   "sowing_date" date NOT NULL,
   "status" text COLLATE "pg_catalog"."default" DEFAULT 'growing'::text,
-  "quality_report" jsonb DEFAULT '{}'::jsonb,
+
   "created_at" timestamptz(6) DEFAULT now(),
   "user_id" text COLLATE "pg_catalog"."default"
 )
@@ -113,6 +113,33 @@ CREATE TABLE "public"."records" (
 -- ----------------------------
 INSERT INTO "public"."records" VALUES ('0c68c379-2753-40ca-864e-727479aef18c', '7e892165-ac8c-4ff1-abcd-1a0d47246bf7', 'water', '井水滴灌', '{https://iquvfinodefwowdqjaqq.supabase.co/storage/v1/object/public/watermelon/7e892165-ac8c-4ff1-abcd-1a0d47246bf7/1766320559225.jpg}', '绿源精品西瓜合作社', '2025-12-21 12:36:01.632+00');
 INSERT INTO "public"."records" VALUES ('70368655-50c7-4e38-ac86-2b7cf592f680', '7e892165-ac8c-4ff1-abcd-1a0d47246bf7', 'pesticide', '粘虫板, 生物防治, 除草作业, 预防白粉病', '{}', '绿源精品西瓜合作社', '2025-12-21 12:48:08.818+00');
+
+-- ----------------------------
+-- Table structure for inspections (NEW)
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."inspections";
+CREATE TABLE "public"."inspections" (
+  "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+  "batch_id" uuid NOT NULL,
+  "stage" text COLLATE "pg_catalog"."default" DEFAULT 'harvest'::text,
+  "result" text COLLATE "pg_catalog"."default" DEFAULT 'pass'::text,
+  "report_data" jsonb DEFAULT '{}'::jsonb,
+  "inspector" text COLLATE "pg_catalog"."default",
+  "created_at" timestamptz(6) DEFAULT now()
+);
+
+-- ----------------------------
+-- Table structure for feedbacks (NEW)
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."feedbacks";
+CREATE TABLE "public"."feedbacks" (
+  "id" uuid NOT NULL DEFAULT gen_random_uuid(),
+  "batch_id" uuid NOT NULL,
+  "rating" int4 DEFAULT 5,
+  "content" text COLLATE "pg_catalog"."default",
+  "consumer" text COLLATE "pg_catalog"."default" DEFAULT 'Anonymous'::text,
+  "created_at" timestamptz(6) DEFAULT now()
+);
 
 -- ----------------------------
 -- Function structure for armor
@@ -430,70 +457,38 @@ CREATE FUNCTION "public"."pgp_sym_encrypt"(text, text)
   LANGUAGE c VOLATILE STRICT
   COST 1;
 
--- ----------------------------
--- Function structure for pgp_sym_encrypt_bytea
--- ----------------------------
 DROP FUNCTION IF EXISTS "public"."pgp_sym_encrypt_bytea"(bytea, text);
 CREATE FUNCTION "public"."pgp_sym_encrypt_bytea"(bytea, text)
   RETURNS "pg_catalog"."bytea" AS '$libdir/pgcrypto', 'pgp_sym_encrypt_bytea'
   LANGUAGE c VOLATILE STRICT
   COST 1;
 
--- ----------------------------
--- Function structure for pgp_sym_encrypt_bytea
--- ----------------------------
 DROP FUNCTION IF EXISTS "public"."pgp_sym_encrypt_bytea"(bytea, text, text);
 CREATE FUNCTION "public"."pgp_sym_encrypt_bytea"(bytea, text, text)
   RETURNS "pg_catalog"."bytea" AS '$libdir/pgcrypto', 'pgp_sym_encrypt_bytea'
   LANGUAGE c VOLATILE STRICT
   COST 1;
 
--- ----------------------------
--- Uniques structure for table app_users
--- ----------------------------
+
 ALTER TABLE "public"."app_users" ADD CONSTRAINT "app_users_username_key" UNIQUE ("username");
 
--- ----------------------------
--- Checks structure for table app_users
--- ----------------------------
 ALTER TABLE "public"."app_users" ADD CONSTRAINT "app_users_role_check" CHECK (role = ANY (ARRAY['farmer'::text, 'gov'::text, 'enterprise'::text]));
 
--- ----------------------------
--- Primary Key structure for table app_users
--- ----------------------------
 ALTER TABLE "public"."app_users" ADD CONSTRAINT "app_users_pkey" PRIMARY KEY ("id");
 
--- ----------------------------
--- Uniques structure for table base_locations
--- ----------------------------
 ALTER TABLE "public"."base_locations" ADD CONSTRAINT "base_locations_name_key" UNIQUE ("name");
 
--- ----------------------------
--- Primary Key structure for table base_locations
--- ----------------------------
 ALTER TABLE "public"."base_locations" ADD CONSTRAINT "base_locations_pkey" PRIMARY KEY ("id");
 
--- ----------------------------
--- Uniques structure for table base_varieties
--- ----------------------------
+
 ALTER TABLE "public"."base_varieties" ADD CONSTRAINT "base_varieties_name_key" UNIQUE ("name");
 
--- ----------------------------
--- Primary Key structure for table base_varieties
--- ----------------------------
 ALTER TABLE "public"."base_varieties" ADD CONSTRAINT "base_varieties_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Primary Key structure for table batches
--- ----------------------------
 ALTER TABLE "public"."batches" ADD CONSTRAINT "batches_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Primary Key structure for table records
--- ----------------------------
 ALTER TABLE "public"."records" ADD CONSTRAINT "records_pkey" PRIMARY KEY ("id");
-
--- ----------------------------
--- Foreign Keys structure for table records
--- ----------------------------
+ALTER TABLE "public"."inspections" ADD CONSTRAINT "inspections_pkey" PRIMARY KEY ("id");
+ALTER TABLE "public"."feedbacks" ADD CONSTRAINT "feedbacks_pkey" PRIMARY KEY ("id");
 ALTER TABLE "public"."records" ADD CONSTRAINT "records_batch_id_fkey" FOREIGN KEY ("batch_id") REFERENCES "public"."batches" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."records" ADD CONSTRAINT "records_batch_id_fkey" FOREIGN KEY ("batch_id") REFERENCES "public"."batches" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."inspections" ADD CONSTRAINT "inspections_batch_id_fkey" FOREIGN KEY ("batch_id") REFERENCES "public"."batches" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."feedbacks" ADD CONSTRAINT "feedbacks_batch_id_fkey" FOREIGN KEY ("batch_id") REFERENCES "public"."batches" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;

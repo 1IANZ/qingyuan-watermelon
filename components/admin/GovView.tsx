@@ -144,6 +144,17 @@ export default async function GovView() {
                   </Link>
                 </Button>
 
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-gray-500 hover:text-purple-600 hover:bg-purple-50 mr-2"
+                >
+                  <Link href={`/admin/quality/${batch.id}`} title="质量监管">
+                    <BarChart3 className="w-4 h-4" />
+                  </Link>
+                </Button>
+
                 <div className="h-4 w-px bg-gray-200 mx-1"></div>
 
                 <form action={approveBatchAction.bind(null, batch.id)}>
@@ -173,10 +184,11 @@ export default async function GovView() {
                 </form>
               </div>
             </div>
-          ))}
-        </div>
-      </Card>
-    </div>
+          ))
+          }
+        </div >
+      </Card >
+    </div >
   );
 }
 

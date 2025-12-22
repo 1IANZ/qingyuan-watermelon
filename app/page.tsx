@@ -3,7 +3,6 @@
 import { Search, Sprout, UserCog } from "lucide-react"; // ❌ 移除了 ScanLine
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -23,7 +22,6 @@ export default function ConsumerHome() {
 		router.push(`/trace/${traceId.trim()}`);
 	};
 
-	// 处理登录跳转
 	const handleLoginClick = () => {
 		router.push("/login");
 	};
