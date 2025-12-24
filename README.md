@@ -141,7 +141,7 @@ bun prisma db push
 
 ```bash
 bun dev
-
+```
 
 6. **访问应用**
 
