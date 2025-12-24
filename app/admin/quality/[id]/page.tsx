@@ -154,7 +154,7 @@ export default async function QualityPage({
                               size="sm"
                               variant="ghost"
                               type="submit"
-                              className="h-6 w-6 p-0 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="h-6 w-6 p-0 text-red-400 hover:text-red-600 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>

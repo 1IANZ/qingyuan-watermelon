@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle, Lock, Sprout, User } from "lucide-react";
+import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,17 @@ export default function LoginPage() {
             </div>
 
             <SubmitButton />
+
+            {/* 注册入口 */}
+            <div className="text-center text-sm text-gray-600 pt-2">
+              还没有账号?{" "}
+              <Link
+                href="/register"
+                className="text-green-600 hover:text-green-700 hover:underline font-medium"
+              >
+                立即注册
+              </Link>
+            </div>
           </form>
         </CardContent>
       </Card>

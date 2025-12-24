@@ -4,6 +4,7 @@ import {
   Check,
   ExternalLink, // 新增：外链图标
   Eye,
+  UserCheck, // 新增：用户审核图标
   Users,
   X,
 } from "lucide-react";
@@ -17,27 +18,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/lib/db";
 
 export default async function GovView() {
-  const [totalBatches, userCount, pendingCount, rejectedCount, recentBatches] =
-    await Promise.all([
-      db.batches.count(),
+  const [
+    totalBatches,
+    userCount,
+    pendingCount,
+    rejectedCount,
+    pendingUsers,
+    recentBatches,
+  ] = await Promise.all([
+    db.batches.count(),
 
-      db.app_users.count({
-        where: { role: { not: "gov" } },
-      }),
+    db.app_users.count({
+      where: { role: { not: "gov" } },
+    }),
 
-      db.batches.count({
-        where: { status: "growing" },
-      }),
+    db.batches.count({
+      where: { status: "growing" },
+    }),
 
-      db.batches.count({
-        where: { status: "rejected" },
-      }),
+    db.batches.count({
+      where: { status: "rejected" },
+    }),
 
-      db.batches.findMany({
-        orderBy: { created_at: "desc" },
-        take: 5,
-      }),
-    ]);
+    db.app_users.count({
+      where: { account_status: "pending" },
+    }),
+
+    db.batches.findMany({
+      orderBy: { created_at: "desc" },
+      take: 5,
+    }),
+  ]);
 
   const passRate =
     totalBatches > 0
@@ -95,6 +106,35 @@ export default async function GovView() {
         </Card>
       </div>
 
+      {/* 用户审核管理入口 */}
+      {pendingUsers > 0 && (
+        <Card className="border-amber-200 bg-amber-50/30">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-amber-100 p-2 rounded-lg">
+                  <UserCheck className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    待审核用户申请
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    有 <span className="font-bold text-amber-600">{pendingUsers}</span> 个企业用户注册申请等待审核
+                  </p>
+                </div>
+              </div>
+              <Link href="/admin/users">
+                <Button className="bg-amber-600 hover:bg-amber-700">
+                  <UserCheck className="w-4 h-4 mr-2" />
+                  前往审核
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-purple-100">
         <CardHeader className="bg-purple-50/50 border-b border-purple-100 py-4">
           <CardTitle className="text-base font-bold text-purple-900 flex items-center gap-2">
@@ -135,10 +175,7 @@ export default async function GovView() {
                   size="sm"
                   className="h-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50 mr-2"
                 >
-                  <Link
-                    href={`/trace/${batch.batch_no}`}
-                    title="查看溯源详情"
-                  >
+                  <Link href={`/trace/${batch.batch_no}`} title="查看溯源详情">
                     <ExternalLink className="w-4 h-4 mr-1" />
                     <span className="text-xs font-medium">核查</span>
                   </Link>
@@ -184,11 +221,10 @@ export default async function GovView() {
                 </form>
               </div>
             </div>
-          ))
-          }
-        </div >
-      </Card >
-    </div >
+          ))}
+        </div>
+      </Card>
+    </div>
   );
 }
 

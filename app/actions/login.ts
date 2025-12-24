@@ -16,6 +16,20 @@ export async function loginAction(_prevState: LoginState, formData: FormData) {
 	const user = await db.app_users.findUnique({ where: { username } });
 	if (!user || user.password !== password) return { message: "账号或密码错误" };
 
+	// 检查账户审核状态
+	if (user.account_status === "pending") {
+		return { message: "您的账户正在等待审核,请耐心等待政府部门审核通过。" };
+	}
+
+	if (user.account_status === "rejected") {
+		return { message: "您的账户申请未通过审核,如有疑问请联系管理部门。" };
+	}
+
+	// 只有active状态的用户才能继续登录
+	if (user.account_status !== "active") {
+		return { message: "账户状态异常,无法登录。" };
+	}
+
 	const token = await signToken({
 		userId: user.id,
 		username: user.username,
@@ -33,3 +47,4 @@ export async function loginAction(_prevState: LoginState, formData: FormData) {
 
 	redirect("/admin");
 }
+
