@@ -7,6 +7,7 @@ import {
   FileCheck,
   FlaskConical,
   Search,
+  Truck,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -166,6 +167,16 @@ export default async function EnterpriseView() {
                       </div>
                     )}
                   </div>
+
+                  <Link href={`/admin/add-logistics?batchId=${batch.id}`}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                    >
+                      <Truck className="w-4 h-4 mr-2" /> 流通
+                    </Button>
+                  </Link>
 
                   <Link href={`/admin/quality/${batch.id}`}>
                     <Button

@@ -211,9 +211,9 @@ export default async function QualityPage({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pass">合格</SelectItem>
-                        <SelectItem value="fail">不合格 (Fail)</SelectItem>
+                        <SelectItem value="fail">不合格</SelectItem>
                         <SelectItem value="warning">
-                          风险预警 (Warning)
+                          风险预警
                         </SelectItem>
                       </SelectContent>
                     </Select>

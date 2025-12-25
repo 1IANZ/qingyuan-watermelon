@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import {
   CalendarDays,
   ExternalLink,
-  FlaskConical,
   History,
   MapPin,
   Plus,

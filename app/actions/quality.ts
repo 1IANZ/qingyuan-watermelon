@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { checkAndCreateAlerts } from "./alerts";
 
 export async function addInspectionAction(formData: FormData) {
   const batchId = formData.get("batch_id") as string;
@@ -32,10 +33,8 @@ export async function addInspectionAction(formData: FormData) {
       },
     });
 
-    // If it's a Gov inspection and it fails, we might want to update the batch status too
-    if (result === "fail" || result === "warning") {
-      // logic to flag batch could go here
-    }
+    // 自动检测预警
+    await checkAndCreateAlerts(batchId);
 
     revalidatePath("/admin");
     revalidatePath(`/trace/${batchId}`);
@@ -43,7 +42,7 @@ export async function addInspectionAction(formData: FormData) {
     return { success: true, message: "检测记录已添加" };
   } catch (error) {
     console.error("Add inspection error:", error);
-    return { success: false, message: "添加失败，请重试" };
+    return { success: false, message: "添加失败,请重试" };
   }
 }
 

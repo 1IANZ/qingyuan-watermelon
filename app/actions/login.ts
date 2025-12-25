@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { signToken } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
+import { verifyPassword } from "@/lib/password";
 
 type LoginState = { message?: string };
 
@@ -14,7 +15,16 @@ export async function loginAction(_prevState: LoginState, formData: FormData) {
 	if (!username || !password) return { message: "请输入用户名和密码" };
 
 	const user = await db.app_users.findUnique({ where: { username } });
-	if (!user || user.password !== password) return { message: "账号或密码错误" };
+
+	if (!user) {
+		return { message: "账号或密码错误" };
+	}
+
+	// 使用 bcrypt 验证密码
+	const isPasswordValid = await verifyPassword(password, user.password);
+	if (!isPasswordValid) {
+		return { message: "账号或密码错误" };
+	}
 
 	// 检查账户审核状态
 	if (user.account_status === "pending") {

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import PasswordStrengthIndicator from "@/components/ui/PasswordStrengthIndicator";
 import {
   Select,
   SelectContent,
@@ -46,6 +47,7 @@ function SubmitButton() {
 export default function RegisterPage() {
   const [state, formAction] = useActionState(registerAction, { message: "" });
   const [selectedRole, setSelectedRole] = useState("farmer");
+  const [password, setPassword] = useState("");
 
   const roleInfo = {
     farmer: {
@@ -73,7 +75,9 @@ export default function RegisterPage() {
           <CardTitle className="text-2xl font-bold text-green-900 dark:text-green-100">
             用户注册
           </CardTitle>
-          <CardDescription className="dark:text-gray-400">清苑西瓜溯源与品质协同监管系统</CardDescription>
+          <CardDescription className="dark:text-gray-400">
+            清苑西瓜溯源与品质协同监管系统
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction} className="space-y-4">
@@ -92,7 +96,9 @@ export default function RegisterPage() {
 
             {/* 用户名 */}
             <div className="space-y-2">
-              <Label htmlFor="username" className="dark:text-gray-200">用户名</Label>
+              <Label htmlFor="username" className="dark:text-gray-200">
+                用户名
+              </Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
@@ -107,7 +113,9 @@ export default function RegisterPage() {
 
             {/* 真实姓名 */}
             <div className="space-y-2">
-              <Label htmlFor="realName" className="dark:text-gray-200">真实姓名</Label>
+              <Label htmlFor="realName" className="dark:text-gray-200">
+                真实姓名
+              </Label>
               <div className="relative">
                 <UserCircle className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
@@ -122,24 +130,31 @@ export default function RegisterPage() {
 
             {/* 密码 */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="dark:text-gray-200">密码</Label>
+              <Label htmlFor="password" className="dark:text-gray-200">
+                密码
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="至少6位字符"
+                  placeholder="至少8位，包含大小写字母、数字和特殊字符"
                   className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
                   required
-                  minLength={6}
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              <PasswordStrengthIndicator password={password} />
             </div>
 
             {/* 确认密码 */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="dark:text-gray-200">确认密码</Label>
+              <Label htmlFor="confirmPassword" className="dark:text-gray-200">
+                确认密码
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
@@ -156,7 +171,9 @@ export default function RegisterPage() {
 
             {/* 角色选择 */}
             <div className="space-y-2">
-              <Label htmlFor="role" className="dark:text-gray-200">用户角色</Label>
+              <Label htmlFor="role" className="dark:text-gray-200">
+                用户角色
+              </Label>
               <Select
                 name="role"
                 defaultValue="farmer"
@@ -169,7 +186,11 @@ export default function RegisterPage() {
                   {Object.entries(roleInfo).map(([value, info]) => {
                     const Icon = info.icon;
                     return (
-                      <SelectItem key={value} value={value} className="dark:text-gray-100 dark:focus:bg-gray-700">
+                      <SelectItem
+                        key={value}
+                        value={value}
+                        className="dark:text-gray-100 dark:focus:bg-gray-700"
+                      >
                         <div className="flex items-center gap-2">
                           <Icon className="w-4 h-4" />
                           <span>{info.label}</span>

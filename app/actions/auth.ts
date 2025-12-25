@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { signToken } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
+import { verifyPassword } from "@/lib/password";
 
 type FormState = {
 	message?: string;
@@ -24,7 +25,14 @@ export async function loginAction(
 		where: { username },
 	});
 
-	if (!user || user.password !== password) {
+	if (!user) {
+		return { message: "用户名或密码错误" };
+	}
+
+	// 使用 bcrypt 验证密码
+	const isPasswordValid = await verifyPassword(password, user.password);
+
+	if (!isPasswordValid) {
 		return { message: "用户名或密码错误" };
 	}
 

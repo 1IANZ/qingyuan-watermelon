@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { signToken } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
+import { hashPassword, validatePasswordStrength } from "@/lib/password";
 
 type RegisterState = { message?: string; success?: boolean };
 
@@ -22,9 +23,10 @@ export async function registerAction(
     return { message: "请填写所有必填字段" };
   }
 
-  // 验证密码长度
-  if (password.length < 6) {
-    return { message: "密码至少需要6位字符" };
+  // 验证密码强度
+  const passwordValidation = validatePasswordStrength(password);
+  if (!passwordValidation.isValid) {
+    return { message: passwordValidation.errors.join("；") };
   }
 
   // 验证两次密码是否一致
@@ -53,12 +55,14 @@ export async function registerAction(
       return { message: "该用户名已被注册，请选择其他用户名" };
     }
 
-    // TODO: 在生产环境中应使用 bcrypt 等加密算法对密码进行哈希处理
+    // 使用 bcrypt 对密码进行哈希处理
+    const hashedPassword = await hashPassword(password);
+
     // 创建新用户
     const newUser = await db.app_users.create({
       data: {
         username,
-        password, // 当前使用明文存储，与现有登录逻辑保持一致
+        password: hashedPassword,
         real_name: realName,
         role,
         account_status: accountStatus,

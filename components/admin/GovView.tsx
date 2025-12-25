@@ -2,9 +2,10 @@ import { format } from "date-fns";
 import {
   BarChart3,
   Check,
-  ExternalLink, // 新增：外链图标
+  ExternalLink, // 新增:外链图标
   Eye,
-  UserCheck, // 新增：用户审核图标
+  ShieldAlert,
+  UserCheck, // 新增:用户审核图标
   Users,
   X,
 } from "lucide-react";
@@ -134,6 +135,33 @@ export default async function GovView() {
           </CardContent>
         </Card>
       )}
+
+      {/* 预警中心入口 */}
+      <Link href="/admin/alerts">
+        <Card className="border-red-200 dark:border-red-800 bg-red-50/30 dark:bg-red-900/20 hover:bg-red-100/50 dark:hover:bg-red-900/30 transition-colors cursor-pointer">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-red-100 dark:bg-red-900/50 p-2 rounded-lg">
+                  <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                    品质预警中心
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    查看和处理品质预警,协同处置异常情况
+                  </p>
+                </div>
+              </div>
+              <Button className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600">
+                <ShieldAlert className="w-4 h-4 mr-2" />
+                进入预警中心
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
 
       <Card className="border-purple-100 dark:border-purple-900">
         <CardHeader className="bg-purple-50/50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-900 py-4">
