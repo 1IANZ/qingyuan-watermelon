@@ -55,3 +55,28 @@ export async function rejectUser(formData: FormData): Promise<void> {
   // 刷新页面数据
   revalidatePath("/admin/users");
 }
+
+/**
+ * 删除用户账户(简化版,用于直接作为form action)
+ */
+export async function deleteUserAction(userId: string): Promise<void> {
+  // const userId = formData.get("userId") as string;
+
+  // 检查当前用户权限(必须是gov角色)
+  const currentUser = await getCurrentUser();
+  if (currentUser?.role !== "gov") {
+    throw new Error("无权限操作,仅政府账户可以删除用户");
+  }
+
+  if (!userId) {
+    throw new Error("用户ID不能为空");
+  }
+
+  // 删除用户
+  await db.app_users.delete({
+    where: { id: userId },
+  });
+
+  // 刷新页面数据
+  revalidatePath("/admin/users");
+}

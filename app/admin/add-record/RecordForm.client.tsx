@@ -208,12 +208,6 @@ export default function RecordForm({ batch }: { batch: batches }) {
                 批次号: {batch.batch_no}
               </p>
             </div>
-            <Badge
-              variant="secondary"
-              className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-            >
-              {batch.status === "growing" ? "种植中" : "已结束"}
-            </Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">

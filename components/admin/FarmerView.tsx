@@ -33,31 +33,7 @@ function getTypeName(type: string) {
   return map[type] || type;
 }
 
-function StatusBadge({ status }: { status: string | null }) {
-  if (status === "approved")
-    return (
-      <span className="text-xs font-medium bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full border border-green-200">
-        已通过监管审核
-      </span>
-    );
-  if (status === "rejected")
-    return (
-      <span className="text-xs font-medium bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full border border-red-200">
-        监管驳回/异常
-      </span>
-    );
-  if (status === "finished")
-    return (
-      <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full border border-gray-200">
-        已采收上市
-      </span>
-    );
-  return (
-    <span className="text-xs font-medium bg-blue-50 text-blue-600 px-2.5 py-0.5 rounded-full border border-blue-100">
-      种植生产中
-    </span>
-  );
-}
+
 
 export default async function FarmerView({ userId }: { userId: string }) {
   const batches = await db.batches.findMany({
@@ -118,8 +94,7 @@ export default async function FarmerView({ userId }: { userId: string }) {
                       {batch.batch_no}
                     </span>
                   </div>
-                  {/* 使用新的状态组件 */}
-                  <StatusBadge status={batch.status} />
+
                 </CardHeader>
 
                 <CardContent className="pt-4 grid sm:grid-cols-3 gap-4">

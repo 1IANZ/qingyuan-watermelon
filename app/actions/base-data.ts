@@ -162,15 +162,9 @@ export async function getVarietiesAction() {
 export async function addVarietyAction(formData: FormData) {
   try {
     const name = formData.get("name") as string;
-    const daysStr = formData.get("days") as string;
 
-    if (!name || !daysStr) {
-      return { success: false, error: "品种名称和生长周期不能为空" };
-    }
-
-    const days = parseInt(daysStr, 10);
-    if (Number.isNaN(days) || days <= 0) {
-      return { success: false, error: "生长周期必须是大于0的数字" };
+    if (!name) {
+      return { success: false, error: "品种名称不能为空" };
     }
 
     // 检查是否已存在同名品种
@@ -185,7 +179,6 @@ export async function addVarietyAction(formData: FormData) {
     await db.base_varieties.create({
       data: {
         name: name.trim(),
-        days,
       },
     });
 
@@ -205,15 +198,9 @@ export async function updateVarietyAction(formData: FormData) {
   try {
     const id = formData.get("id") as string;
     const name = formData.get("name") as string;
-    const daysStr = formData.get("days") as string;
 
-    if (!id || !name || !daysStr) {
+    if (!id || !name) {
       return { success: false, error: "缺少必要参数" };
-    }
-
-    const days = parseInt(daysStr, 10);
-    if (Number.isNaN(days) || days <= 0) {
-      return { success: false, error: "生长周期必须是大于0的数字" };
     }
 
     // 检查是否有其他品种使用了这个名称
@@ -232,7 +219,6 @@ export async function updateVarietyAction(formData: FormData) {
       where: { id },
       data: {
         name: name.trim(),
-        days,
       },
     });
 

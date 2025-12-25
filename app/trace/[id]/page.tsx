@@ -93,6 +93,9 @@ export default async function TracePage({
       logistics: {
         orderBy: { recorded_at: "desc" },
       },
+      alerts: {
+        orderBy: { created_at: "desc" },
+      },
     },
   });
 
@@ -115,14 +118,29 @@ export default async function TracePage({
     );
   }
 
-  const isApproved = batch.status === "approved";
-  const isRejected = batch.status === "rejected";
+  // 风险判定逻辑优化
+  // 1. 是否有未解决的预警 (pending 或 processing)
+  const unresolvedAlerts = batch.alerts.filter(
+    (a) => a.status === "pending" || a.status === "processing",
+  );
+  const hasUnresolvedRisks = unresolvedAlerts.length > 0;
 
-  const hasFail = batch.inspections.some((i) => i.result === "fail");
+  // 2. 是否被监管驳回
+  const isRejected = batch.audit_status === "rejected";
 
-  const headerGradient =
-    isRejected || hasFail
-      ? "from-red-600 to-red-800 dark:from-red-900 dark:to-red-950"
+  // 3. 总体风险判定: 有未解决预警 OR 被驳回
+  const isRisk = hasUnresolvedRisks || isRejected;
+
+  // 4. 是否有已解决的历史风险 (用于显示正面反馈)
+  const hasResolvedRisks =
+    !isRisk && batch.alerts.some((a) => a.status === "resolved");
+
+  // const hasFail = batch.inspections.some((i) => i.result === "fail"); // 原有的简单逻辑已废弃
+
+  const headerGradient = isRisk
+    ? "from-red-600 to-red-800 dark:from-red-900 dark:to-red-950"
+    : hasResolvedRisks
+      ? "from-blue-600 to-blue-800 dark:from-blue-900 dark:to-blue-950" // 已处置显示蓝色风格
       : "from-emerald-500 to-green-700 dark:from-emerald-900 dark:to-green-950";
 
   const stageMap: Record<string, string> = {
@@ -134,7 +152,7 @@ export default async function TracePage({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black max-w-md mx-auto shadow-2xl overflow-hidden relative pb-10 transition-colors">
-      {(isRejected || hasFail) && (
+      {isRisk && (
         <div className="bg-red-600 text-white px-4 py-3 flex items-start gap-3 relative z-50 animate-in slide-in-from-top duration-500">
           <ShieldAlert className="w-6 h-6 shrink-0 animate-pulse text-yellow-300" />
           <div>
@@ -142,13 +160,20 @@ export default async function TracePage({
               风险预警：该批次存在质量风险
             </h3>
             <p className="text-xs opacity-90 mt-1 leading-relaxed">
-              监管部门检测到异常或不符合标准，请谨慎购买。
+              {isRejected
+                ? "监管部门已驳回该批次，请勿购买。"
+                : `存在 ${unresolvedAlerts.length} 项未处置的质量预警，建议谨慎购买。`}
             </p>
           </div>
         </div>
       )}
 
-      <div className={cn("relative h-64 overflow-hidden bg-linear-to-br transition-colors duration-500", headerGradient)}>
+      <div
+        className={cn(
+          "relative h-64 overflow-hidden bg-linear-to-br transition-colors duration-500",
+          headerGradient,
+        )}
+      >
         <Sprout className="absolute -right-10 -top-10 w-40 h-40 text-white/10 rotate-12" />
         <Leaf className="absolute left-5 top-10 w-20 h-20 text-white/10 -rotate-45" />
         <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
@@ -158,13 +183,25 @@ export default async function TracePage({
             <Badge className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm">
               <CheckCircle2 className="w-3 h-3 mr-1" /> 正品溯源
             </Badge>
-            {isApproved && !hasFail && (
+            {batch.audit_status === "approved" && !isRisk && (
               <Badge className="bg-blue-500/90 hover:bg-blue-600 text-white border-none backdrop-blur-sm shadow-sm">
                 <Landmark className="w-3 h-3 mr-1" /> 监管审核合规
               </Badge>
             )}
+            {isRisk && (
+              <Badge className="bg-red-500/90 hover:bg-red-600 text-white border-none backdrop-blur-sm shadow-sm">
+                <ShieldAlert className="w-3 h-3 mr-1" /> 风险提示
+              </Badge>
+            )}
+            {hasResolvedRisks && (
+              <Badge className="bg-green-500/90 hover:bg-green-600 text-white border-none backdrop-blur-sm shadow-sm">
+                <ShieldCheck className="w-3 h-3 mr-1" /> 风险已处置
+              </Badge>
+            )}
           </div>
-          <h1 className="text-3xl font-bold mb-1 drop-shadow-md">{batch.variety}</h1>
+          <h1 className="text-3xl font-bold mb-1 drop-shadow-md">
+            {batch.variety}
+          </h1>
           <div className="flex items-center text-white/90 text-sm font-medium">
             <MapPin className="w-3.5 h-3.5 mr-1" />
             {batch.location}
@@ -177,16 +214,29 @@ export default async function TracePage({
           <CardContent className="pt-6 pb-6 grid grid-cols-2 gap-y-4">
             <div className="space-y-4">
               <div>
-                <div className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">溯源批次号</div>
-                <div className="font-mono font-bold text-gray-800 dark:text-gray-100 text-lg">{batch.batch_no}</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">
+                  溯源批次号
+                </div>
+                <div className="font-mono font-bold text-gray-800 dark:text-gray-100 text-lg">
+                  {batch.batch_no}
+                </div>
               </div>
               <div>
-                <div className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">综合状态</div>
-                <div className={cn("font-medium text-sm flex items-center", {
-                  "text-green-600 dark:text-green-400": !hasFail && !isRejected,
-                  "text-red-600 dark:text-red-400": hasFail || isRejected
-                })}>
-                  {hasFail || isRejected ? "存在风险" : "正常流通"}
+                <div className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">
+                  综合状态
+                </div>
+                <div
+                  className={cn("font-medium text-sm flex items-center", {
+                    "text-green-600 dark:text-green-400": !isRisk && !hasResolvedRisks,
+                    "text-blue-600 dark:text-blue-400": hasResolvedRisks,
+                    "text-red-600 dark:text-red-400": isRisk,
+                  })}
+                >
+                  {isRisk
+                    ? "存在风险"
+                    : hasResolvedRisks
+                      ? "风险已处置"
+                      : "正常流通"}
                 </div>
               </div>
             </div>

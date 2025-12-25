@@ -2,10 +2,10 @@ import { format } from "date-fns";
 import {
   BarChart3,
   Check,
-  ExternalLink, // 新增:外链图标
+  ExternalLink,
   Eye,
   ShieldAlert,
-  UserCheck, // 新增:用户审核图标
+  UserCheck,
   Users,
   X,
 } from "lucide-react";
@@ -17,28 +17,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/lib/db";
+import { cn } from "@/lib/utils";
 
 export default async function GovView() {
   const [
     totalBatches,
     userCount,
-    pendingCount,
-    rejectedCount,
     pendingUsers,
     recentBatches,
+    pendingAuditCount,
+    rejectedCount,
   ] = await Promise.all([
     db.batches.count(),
 
     db.app_users.count({
       where: { role: { not: "gov" } },
-    }),
-
-    db.batches.count({
-      where: { status: "growing" },
-    }),
-
-    db.batches.count({
-      where: { status: "rejected" },
     }),
 
     db.app_users.count({
@@ -48,6 +41,14 @@ export default async function GovView() {
     db.batches.findMany({
       orderBy: { created_at: "desc" },
       take: 5,
+    }),
+
+    db.batches.count({
+      where: { audit_status: "pending" },
+    }),
+
+    db.batches.count({
+      where: { audit_status: "rejected" },
     }),
   ]);
 
@@ -77,7 +78,9 @@ export default async function GovView() {
             <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">
               注册经营主体
             </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{userCount}</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {userCount}
+            </div>
             <div className="text-xs text-gray-400 dark:text-gray-500 flex items-center mt-1">
               <Users className="w-3 h-3 mr-1" /> 农户及企业
             </div>
@@ -88,17 +91,21 @@ export default async function GovView() {
             <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">
               总体合格率
             </div>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{passRate}%</div>
-            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">基于驳回记录计算</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {passRate}%
+            </div>
+            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              基于驳回记录计算
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 pt-6">
             <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">
-              待/在管批次
+              待审核批次
             </div>
             <div className="text-2xl font-bold text-orange-500 dark:text-orange-400">
-              {pendingCount}
+              {pendingAuditCount}
             </div>
             <div className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium cursor-pointer hover:underline">
               需重点关注
@@ -107,34 +114,66 @@ export default async function GovView() {
         </Card>
       </div>
 
-      {/* 用户审核管理入口 */}
-      {pendingUsers > 0 && (
-        <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-900/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-amber-100 dark:bg-amber-900/50 p-2 rounded-lg">
-                  <UserCheck className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                    待审核用户申请
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    有 <span className="font-bold text-amber-600 dark:text-amber-400">{pendingUsers}</span> 个企业用户注册申请等待审核
-                  </p>
-                </div>
+      {/* 用户管理入口 - 始终显示 */}
+      <Card
+        className={cn("transition-colors", {
+          "border-amber-200 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-900/20":
+            pendingUsers > 0,
+          "border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer":
+            pendingUsers === 0,
+        })}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div
+                className={cn("p-2 rounded-lg", {
+                  "bg-amber-100 dark:bg-amber-900/50": pendingUsers > 0,
+                  "bg-blue-100 dark:bg-blue-900/50": pendingUsers === 0,
+                })}
+              >
+                <UserCheck
+                  className={cn("w-5 h-5", {
+                    "text-amber-600 dark:text-amber-400": pendingUsers > 0,
+                    "text-blue-600 dark:text-blue-400": pendingUsers === 0,
+                  })}
+                />
               </div>
-              <Link href="/admin/users">
-                <Button className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600">
-                  <UserCheck className="w-4 h-4 mr-2" />
-                  前往审核
-                </Button>
-              </Link>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                  {pendingUsers > 0 ? "待审核用户申请" : "用户账号管理"}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {pendingUsers > 0 ? (
+                    <>
+                      有{" "}
+                      <span className="font-bold text-amber-600 dark:text-amber-400">
+                        {pendingUsers}
+                      </span>{" "}
+                      个企业用户注册申请等待审核
+                    </>
+                  ) : (
+                    `管理已注册的 ${userCount} 个农户及企业账号`
+                  )}
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <Link href="/admin/users">
+              <Button
+                className={cn({
+                  "bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600":
+                    pendingUsers > 0,
+                  "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600":
+                    pendingUsers === 0,
+                })}
+              >
+                <UserCheck className="w-4 h-4 mr-2" />
+                {pendingUsers > 0 ? "前往审核" : "进入管理"}
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 预警中心入口 */}
       <Link href="/admin/alerts">
@@ -185,7 +224,7 @@ export default async function GovView() {
                     {batch.variety}
                   </span>
 
-                  <StatusBadge status={batch.status} />
+                  <StatusBadge status={batch.audit_status} />
                 </div>
                 <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                   时间:{" "}
@@ -227,7 +266,7 @@ export default async function GovView() {
                     size="icon"
                     variant="ghost"
                     type="submit"
-                    disabled={batch.status === "approved"}
+                    disabled={batch.audit_status === "approved"}
                     className="h-8 w-8 text-green-600 dark:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 disabled:opacity-30"
                     title="审核通过"
                   >
@@ -240,7 +279,7 @@ export default async function GovView() {
                     size="icon"
                     variant="ghost"
                     type="submit"
-                    disabled={batch.status === "rejected"}
+                    disabled={batch.audit_status === "rejected"}
                     className="h-8 w-8 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-30"
                     title="驳回/标记异常"
                   >
@@ -269,15 +308,9 @@ function StatusBadge({ status }: { status: string | null }) {
         已驳回
       </span>
     );
-  if (status === "growing")
-    return (
-      <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-800">
-        种植中
-      </span>
-    );
   return (
     <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded">
-      {status}
+      待审核
     </span>
   );
 }

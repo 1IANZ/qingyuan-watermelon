@@ -1,6 +1,7 @@
-import { Check, CheckCircle2, Clock, Users, X, XCircle } from "lucide-react";
+import { Check, CheckCircle2, Clock, Trash2, Users, X, XCircle } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { deleteUserAction } from "@/app/actions/approve-user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -194,7 +195,6 @@ export default async function UsersManagementPage() {
         </Card>
       )}
 
-      {/* 已审核用户列表 */}
       <Card>
         <CardHeader>
           <CardTitle>所有用户</CardTitle>
@@ -215,11 +215,30 @@ export default async function UsersManagementPage() {
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{user.username}</p>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-500">
-                  {user.created_at
-                    ? new Date(user.created_at).toLocaleDateString("zh-CN")
-                    : ""}
-                </p>
+                <div className="flex items-center gap-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    {user.created_at
+                      ? new Date(user.created_at).toLocaleDateString("zh-CN")
+                      : ""}
+                  </p>
+
+                  <form
+                    action={async () => {
+                      "use server";
+                      await deleteUserAction(user.id);
+                    }}
+                  >
+                    <Button
+                      type="submit"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      title="删除账号"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </form>
+                </div>
               </div>
             ))}
           </div>

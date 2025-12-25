@@ -24,7 +24,8 @@ model batches {
   variety        String
   location       String
   sowing_date    DateTime  @db.Date
-  status         String?   @default("growing")
+  audit_status   String    @default("pending") // pending, approved, rejected
+
 
   created_at     DateTime? @default(now()) @db.Timestamptz(6)
   user_id        String?
@@ -55,7 +56,6 @@ model base_locations {
 model base_varieties {
   id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name String @unique
-  days Int?   @default(90)
 }
 
 model inspections {

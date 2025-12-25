@@ -39,7 +39,6 @@ export async function createBatchAction(
 			variety = await db.base_varieties.create({
 				data: {
 					name: varietyName.trim(),
-					days: 90,
 				},
 			});
 		}
@@ -68,7 +67,7 @@ export async function createBatchAction(
 				variety: variety.name,
 				location: location.name,
 				sowing_date: new Date(sowingDate),
-				status: "growing",
+
 				user_id: user.userId,
 			},
 		});
