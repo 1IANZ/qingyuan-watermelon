@@ -67,10 +67,10 @@ export default async function UsersManagementPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <Users className="w-8 h-8 text-green-600" />
+        <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">用户审核管理</h1>
-          <p className="text-gray-600 text-sm mt-1">审核企业用户的注册申请</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">用户审核管理</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">审核企业用户的注册申请</p>
         </div>
       </div>
 
@@ -79,12 +79,12 @@ export default async function UsersManagementPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-500" />
+              <Clock className="w-4 h-4 text-amber-500 dark:text-amber-400" />
               待审核
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-amber-600">
+            <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
               {pendingUsers.length}
             </p>
           </CardContent>
@@ -93,12 +93,12 @@ export default async function UsersManagementPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <CheckCircle2 className="w-4 h-4 text-green-500 dark:text-green-400" />
               已通过
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-green-600">
+            <p className="text-3xl font-bold text-green-600 dark:text-green-400">
               {activeUsers.length}
             </p>
           </CardContent>
@@ -107,12 +107,12 @@ export default async function UsersManagementPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <XCircle className="w-4 h-4 text-red-500" />
+              <XCircle className="w-4 h-4 text-red-500 dark:text-red-400" />
               已拒绝
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-red-600">
+            <p className="text-3xl font-bold text-red-600 dark:text-red-400">
               {rejectedUsers.length}
             </p>
           </CardContent>
@@ -131,20 +131,20 @@ export default async function UsersManagementPage() {
               {pendingUsers.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-700"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
                         {user.real_name}
                       </p>
                       {getStatusBadge(user.account_status)}
                       <Badge variant="outline">{getRoleName(user.role)}</Badge>
                     </div>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       用户名: {user.username}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                       注册时间:{" "}
                       {user.created_at
                         ? new Date(user.created_at).toLocaleString("zh-CN")
@@ -165,7 +165,7 @@ export default async function UsersManagementPage() {
                       <Button
                         type="submit"
                         size="sm"
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
                       >
                         <Check className="w-4 h-4 mr-1" />
                         通过
@@ -205,17 +205,17 @@ export default async function UsersManagementPage() {
             {allUsers.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center justify-between p-3 border rounded hover:bg-gray-50"
+                className="flex items-center justify-between p-3 border rounded hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-700"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium">{user.real_name}</p>
+                    <p className="font-medium text-foreground">{user.real_name}</p>
                     {getStatusBadge(user.account_status)}
                     <Badge variant="outline">{getRoleName(user.role)}</Badge>
                   </div>
-                  <p className="text-sm text-gray-600">{user.username}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{user.username}</p>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-500">
                   {user.created_at
                     ? new Date(user.created_at).toLocaleDateString("zh-CN")
                     : ""}

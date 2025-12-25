@@ -34,14 +34,14 @@ export default async function AdminAddRecordPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 pb-20">
       <div className="flex items-center mb-6">
         <Link href="/admin">
-          <Button variant="ghost" size="icon" className="-ml-2 mr-1">
-            <ArrowLeft className="w-6 h-6 text-gray-700" />
+          <Button variant="ghost" size="icon" className="-ml-2 mr-1 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800">
+            <ArrowLeft className="w-6 h-6" />
           </Button>
         </Link>
-        <h1 className="text-xl font-bold text-gray-900">新增农事记录</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">新增农事记录</h1>
       </div>
 
       <RecordForm batch={batch} />

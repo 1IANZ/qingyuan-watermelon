@@ -20,32 +20,53 @@ export async function createBatchAction(
 		return { message: "登录已过期，请重新登录", success: false };
 	}
 
-	const varietyId = formData.get("varietyId") as string;
-	const locationId = formData.get("locationId") as string;
+	const varietyName = formData.get("varietyName") as string;
+	const locationName = formData.get("locationName") as string;
 	const sowingDate = formData.get("sowingDate") as string;
 
-	if (!varietyId || !locationId || !sowingDate) {
+	if (!varietyName || !locationName || !sowingDate) {
 		return { message: "请完整填写所有必填项", success: false };
 	}
 
-	const [varietyObj, locationObj] = await Promise.all([
-		db.base_varieties.findUnique({ where: { id: varietyId } }),
-		db.base_locations.findUnique({ where: { id: locationId } }),
-	]);
-
-	if (!varietyObj || !locationObj) {
-		return { message: "选择的数据无效，请刷新页面重试", success: false };
-	}
-
-	const batchNo = `KL-${Date.now().toString().slice(-4)}`;
-
 	try {
-		// 3. 写入数据库
+		// 查找或创建品种
+		let variety = await db.base_varieties.findUnique({
+			where: { name: varietyName.trim() },
+		});
+
+		if (!variety) {
+			// 如果品种不存在，创建新品种（默认90天生长周期）
+			variety = await db.base_varieties.create({
+				data: {
+					name: varietyName.trim(),
+					days: 90,
+				},
+			});
+		}
+
+		// 查找或创建基地
+		let location = await db.base_locations.findUnique({
+			where: { name: locationName.trim() },
+		});
+
+		if (!location) {
+			// 如果基地不存在，创建新基地（默认温棚类型）
+			location = await db.base_locations.create({
+				data: {
+					name: locationName.trim(),
+					type: "warm",
+				},
+			});
+		}
+
+		const batchNo = `KL-${Date.now().toString().slice(-4)}`;
+
+		// 创建批次
 		await db.batches.create({
 			data: {
 				batch_no: batchNo,
-				variety: varietyObj.name,
-				location: locationObj.name,
+				variety: variety.name,
+				location: location.name,
 				sowing_date: new Date(sowingDate),
 				status: "growing",
 				user_id: user.userId,
@@ -53,6 +74,7 @@ export async function createBatchAction(
 		});
 
 		revalidatePath("/admin");
+		revalidatePath("/admin/create-batch");
 	} catch (error) {
 		console.error("新建批次失败:", error);
 		return { message: "创建失败，请重试", success: false };

@@ -62,18 +62,18 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-green-100">
+    <div className="min-h-screen bg-green-50 dark:bg-gray-950 flex items-center justify-center p-4 transition-colors duration-300">
+      <Card className="w-full max-w-md shadow-xl border-green-100 dark:border-green-900 bg-white dark:bg-gray-900">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
-            <div className="bg-green-100 p-3 rounded-full">
-              <Sprout className="w-8 h-8 text-green-600" />
+            <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
+              <Sprout className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-green-900">
+          <CardTitle className="text-2xl font-bold text-green-900 dark:text-green-100">
             用户注册
           </CardTitle>
-          <CardDescription>清苑西瓜溯源与品质协同监管系统</CardDescription>
+          <CardDescription className="dark:text-gray-400">清苑西瓜溯源与品质协同监管系统</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction} className="space-y-4">
@@ -81,8 +81,8 @@ export default function RegisterPage() {
               <div
                 className={
                   state.success
-                    ? "bg-green-50 text-green-700 text-sm p-3 rounded-md flex items-center border border-green-200"
-                    : "bg-red-50 text-red-600 text-sm p-3 rounded-md flex items-center"
+                    ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-sm p-3 rounded-md flex items-center border border-green-200 dark:border-green-800"
+                    : "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-md flex items-center border border-transparent dark:border-red-900/50"
                 }
               >
                 <AlertCircle className="w-4 h-4 mr-2 shrink-0" />
@@ -92,14 +92,14 @@ export default function RegisterPage() {
 
             {/* 用户名 */}
             <div className="space-y-2">
-              <Label htmlFor="username">用户名</Label>
+              <Label htmlFor="username" className="dark:text-gray-200">用户名</Label>
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   id="username"
                   name="username"
                   placeholder="请输入用户名或手机号"
-                  className="pl-9"
+                  className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
                   required
                 />
               </div>
@@ -107,14 +107,14 @@ export default function RegisterPage() {
 
             {/* 真实姓名 */}
             <div className="space-y-2">
-              <Label htmlFor="realName">真实姓名</Label>
+              <Label htmlFor="realName" className="dark:text-gray-200">真实姓名</Label>
               <div className="relative">
-                <UserCircle className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <UserCircle className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   id="realName"
                   name="realName"
                   placeholder="请输入真实姓名"
-                  className="pl-9"
+                  className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
                   required
                 />
               </div>
@@ -122,15 +122,15 @@ export default function RegisterPage() {
 
             {/* 密码 */}
             <div className="space-y-2">
-              <Label htmlFor="password">密码</Label>
+              <Label htmlFor="password" className="dark:text-gray-200">密码</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   id="password"
                   name="password"
                   type="password"
                   placeholder="至少6位字符"
-                  className="pl-9"
+                  className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
                   required
                   minLength={6}
                 />
@@ -139,15 +139,15 @@ export default function RegisterPage() {
 
             {/* 确认密码 */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">确认密码</Label>
+              <Label htmlFor="confirmPassword" className="dark:text-gray-200">确认密码</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
                   placeholder="请再次输入密码"
-                  className="pl-9"
+                  className="pl-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
                   required
                   minLength={6}
                 />
@@ -156,20 +156,20 @@ export default function RegisterPage() {
 
             {/* 角色选择 */}
             <div className="space-y-2">
-              <Label htmlFor="role">用户角色</Label>
+              <Label htmlFor="role" className="dark:text-gray-200">用户角色</Label>
               <Select
                 name="role"
                 defaultValue="farmer"
                 onValueChange={(value) => value && setSelectedRole(value)}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-gray-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                   {Object.entries(roleInfo).map(([value, info]) => {
                     const Icon = info.icon;
                     return (
-                      <SelectItem key={value} value={value}>
+                      <SelectItem key={value} value={value} className="dark:text-gray-100 dark:focus:bg-gray-700">
                         <div className="flex items-center gap-2">
                           <Icon className="w-4 h-4" />
                           <span>{info.label}</span>
@@ -179,11 +179,11 @@ export default function RegisterPage() {
                   })}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {roleInfo[selectedRole as keyof typeof roleInfo]?.description}
               </p>
               {selectedRole === "enterprise" && roleInfo.enterprise.notice && (
-                <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs p-2 rounded-md mt-2 flex items-start gap-1.5">
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-xs p-2 rounded-md mt-2 flex items-start gap-1.5">
                   <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                   <span>{roleInfo.enterprise.notice}</span>
                 </div>
@@ -193,11 +193,11 @@ export default function RegisterPage() {
             <SubmitButton />
 
             {/* 返回登录 */}
-            <div className="text-center text-sm text-gray-600 pt-2">
+            <div className="text-center text-sm text-gray-600 dark:text-gray-400 pt-2">
               已有账号?{" "}
               <Link
                 href="/login"
-                className="text-green-600 hover:text-green-700 hover:underline font-medium"
+                className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:underline font-medium"
               >
                 立即登录
               </Link>

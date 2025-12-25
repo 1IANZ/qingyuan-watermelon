@@ -33,8 +33,8 @@ export default function FeedbackForm({
 
   if (submitted) {
     return (
-      <Card className="mt-8 bg-green-50 border-green-100">
-        <CardContent className="p-8 text-center text-green-800">
+      <Card className="mt-8 bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800">
+        <CardContent className="p-8 text-center text-green-800 dark:text-green-300">
           <div className="text-4xl mb-2">🎉</div>
           <h3 className="font-bold text-lg">感谢您的评价！</h3>
           <p className="text-sm opacity-80 mt-1">
@@ -46,10 +46,10 @@ export default function FeedbackForm({
   }
 
   return (
-    <Card className="mt-8 border-none shadow-lg overflow-hidden relative">
+    <Card className="mt-8 border-none shadow-lg overflow-hidden relative dark:bg-gray-900">
       <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-yellow-400 to-orange-500" />
       <CardContent className="p-6">
-        <h3 className="font-bold text-gray-900 mb-4 flex items-center">
+        <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
           <Star className="w-5 h-5 mr-2 text-yellow-500 fill-yellow-500" />
           消费者评价反馈
         </h3>
@@ -58,7 +58,7 @@ export default function FeedbackForm({
           <input type="hidden" name="batch_no" value={batchNo} />
 
           <div>
-            <span className="text-xs font-medium text-gray-500 mb-2 block">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 block">
               请为该西瓜品质打分
             </span>
             <div className="flex gap-2">
@@ -73,7 +73,7 @@ export default function FeedbackForm({
                   <Star
                     className={`w-8 h-8 ${s <= rating
                       ? "text-yellow-400 fill-yellow-400"
-                      : "text-gray-200"
+                      : "text-gray-200 dark:text-gray-700"
                       }`}
                   />
                 </button>
@@ -82,33 +82,33 @@ export default function FeedbackForm({
           </div>
 
           <div>
-            <label htmlFor="content" className="text-xs font-medium text-gray-500 mb-1 block">
+            <label htmlFor="content" className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">
               您的评价建议 (可选)
             </label>
             <Textarea
               id="content"
               name="content"
               placeholder="口感如何？甜度满意吗？欢迎吐槽或点赞..."
-              className="resize-none bg-gray-50 border-gray-200"
+              className="resize-none bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-gray-100"
             />
           </div>
 
           <div>
-            <label htmlFor="contact" className="text-xs font-medium text-gray-500 mb-1 block">
+            <label htmlFor="contact" className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">
               联系方式 (可选)
             </label>
             <Input
               id="contact"
               name="contact"
               placeholder="手机号 (仅售后回访使用)"
-              className="bg-gray-50 border-gray-200"
+              className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-gray-100"
             />
           </div>
 
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold shadow-md"
+            className="w-full bg-linear-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold shadow-md"
           >
             {loading ? "提交中..." : "提交反馈"}
           </Button>

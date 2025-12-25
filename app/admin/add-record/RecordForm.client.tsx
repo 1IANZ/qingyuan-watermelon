@@ -35,8 +35,8 @@ const ACTION_TYPES = [
     label: "灌溉",
     icon: Droplets,
     color: "text-blue-500",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
+    bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    borderColor: "border-blue-200 dark:border-blue-800",
     tags: ["井水滴灌", "喷灌", "水肥一体化", "抗旱浇水"],
   },
   {
@@ -44,8 +44,8 @@ const ACTION_TYPES = [
     label: "施肥",
     icon: Leaf,
     color: "text-amber-500",
-    bgColor: "bg-amber-50",
-    borderColor: "border-amber-200",
+    bgColor: "bg-amber-50 dark:bg-amber-900/20",
+    borderColor: "border-amber-200 dark:border-amber-800",
     tags: ["有机肥", "复合肥", "水溶肥", "农家肥", "钾肥"],
   },
   {
@@ -53,17 +53,17 @@ const ACTION_TYPES = [
     label: "植保",
     icon: Hammer,
     color: "text-red-500",
-    bgColor: "bg-red-50",
-    borderColor: "border-red-200",
+    bgColor: "bg-red-50 dark:bg-red-900/20",
+    borderColor: "border-red-200 dark:border-red-800",
     tags: ["生物防治", "粘虫板", "除草作业", "预防白粉病"],
   },
   {
     id: "harvest",
     label: "采收",
     icon: Truck,
-    color: "text-green-600",
-    bgColor: "bg-green-50",
-    borderColor: "border-green-200",
+    color: "text-green-600 dark:text-green-500",
+    bgColor: "bg-green-50 dark:bg-green-900/20",
+    borderColor: "border-green-200 dark:border-green-800",
     tags: ["首批采摘", "分批采摘", "测糖合格", "挑选装箱"],
   },
   {
@@ -71,8 +71,8 @@ const ACTION_TYPES = [
     label: "流通运输",
     icon: Truck,
     color: "text-orange-500",
-    bgColor: "bg-orange-50",
-    borderColor: "border-orange-200",
+    bgColor: "bg-orange-50 dark:bg-orange-900/20",
+    borderColor: "border-orange-200 dark:border-orange-800",
     tags: ["装车发货", "冷链运输", "到达集散地", "终端配送"],
   },
   {
@@ -80,8 +80,8 @@ const ACTION_TYPES = [
     label: "仓储",
     icon: MapPin,
     color: "text-blue-500",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
+    bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    borderColor: "border-blue-200 dark:border-blue-800",
     tags: ["入库", "出库", "温湿度检测", "库存盘点"],
   },
   {
@@ -89,8 +89,8 @@ const ACTION_TYPES = [
     label: "其他",
     icon: PenTool,
     color: "text-purple-500",
-    bgColor: "bg-purple-50",
-    borderColor: "border-purple-200",
+    bgColor: "bg-purple-50 dark:bg-purple-900/20",
+    borderColor: "border-purple-200 dark:border-purple-800",
     tags: ["大棚修缮", "整枝打叉", "授粉", "清理杂草", "农机作业"],
   },
 ];
@@ -101,7 +101,7 @@ function SubmitButton() {
   return (
     <Button
       type="submit"
-      className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 shadow-lg shadow-green-200"
+      className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 shadow-lg shadow-green-200 dark:shadow-none"
       disabled={pending}
     >
       {pending ? (
@@ -172,23 +172,23 @@ export default function RecordForm({ batch }: { batch: batches }) {
       <input type="hidden" name="actionType" value={selectedType} />
 
       {/* 顶部：档案信息 */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-start mb-3">
           <div>
-            <h2 className="text-lg font-bold text-gray-900 flex items-center">
-              <Tag className="w-4 h-4 mr-1 text-green-600" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
+              <Tag className="w-4 h-4 mr-1 text-green-600 dark:text-green-500" />
               {batch.variety}
             </h2>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               批次号: {batch.batch_no}
             </p>
           </div>
-          <Badge variant="secondary" className="bg-gray-100 text-gray-600">
+          <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
             {batch.status === "growing" ? "种植中" : "已结束"}
           </Badge>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 bg-gray-50 p-2 rounded-lg">
+        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">
           <div className="flex items-center truncate">
             <MapPin className="w-3 h-3 mr-1 text-gray-400 shrink-0" />
             {batch.location}
@@ -202,7 +202,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
 
       {/* 错误提示 */}
       {state.message && !state.success && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center">
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm flex items-center">
           <AlertCircle className="w-4 h-4 mr-2" />
           {state.message}
         </div>
@@ -210,7 +210,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
 
       {/* 1. 操作类型选择 */}
       <section>
-        <Label className="mb-3 block text-gray-700">1. 选择操作类型</Label>
+        <Label className="mb-3 block text-gray-700 dark:text-gray-300">1. 选择操作类型</Label>
         <div className="grid grid-cols-4 gap-3">
           {ACTION_TYPES.map((type) => {
             const Icon = type.icon;
@@ -223,8 +223,8 @@ export default function RecordForm({ batch }: { batch: batches }) {
                 className={`
                   flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all
                   ${isSelected
-                    ? `border-green-500 ${type.bgColor} ring-2 ring-green-200 ring-offset-1`
-                    : "border-gray-100 bg-white hover:bg-gray-50"
+                    ? `border-green-500 ${type.bgColor} ring-2 ring-green-200 ring-offset-1 dark:ring-green-900 dark:ring-offset-0`
+                    : "border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }
                 `}
               >
@@ -232,7 +232,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
                   className={`w-6 h-6 mb-2 ${isSelected ? type.color : "text-gray-400"}`}
                 />
                 <span
-                  className={`text-xs font-medium ${isSelected ? "text-gray-900" : "text-gray-500"}`}
+                  className={`text-xs font-medium ${isSelected ? "text-gray-900 dark:text-gray-100" : "text-gray-500"}`}
                 >
                   {type.label}
                 </span>
@@ -243,8 +243,8 @@ export default function RecordForm({ batch }: { batch: batches }) {
       </section>
 
       {/* 2. 详情填写 & 图片上传 */}
-      <Card className="border-none shadow-sm overflow-hidden">
-        <CardHeader className="pb-3 border-b border-gray-100 bg-white">
+      <Card className="border-none shadow-sm overflow-hidden dark:bg-gray-900">
+        <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div className="flex items-center gap-3">
             <div
               className={`
@@ -255,21 +255,21 @@ export default function RecordForm({ batch }: { batch: batches }) {
               <CurrentIcon className={`w-5 h-5 ${currentTypeConfig.color}`} />
             </div>
             <div>
-              <CardTitle className="text-base text-gray-900">
+              <CardTitle className="text-base text-gray-900 dark:text-gray-100">
                 {currentTypeConfig.label}详情
               </CardTitle>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4 pt-4">
+        <CardContent className="space-y-4 pt-4 dark:bg-card">
           {/* 快捷标签 */}
           <div className="flex flex-wrap gap-2">
             {currentTypeConfig.tags.map((tag) => (
               <Badge
                 key={tag}
                 variant="secondary"
-                className="cursor-pointer bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-700 py-1.5 px-3 transition-colors"
+                className="cursor-pointer bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-green-400 py-1.5 px-3 transition-colors"
                 onClick={() => handleTagClick(tag)}
               >
                 + {tag}
@@ -279,10 +279,10 @@ export default function RecordForm({ batch }: { batch: batches }) {
 
           {/* 动态表单字段 */}
           {selectedType === "transport" && (
-            <div className="grid grid-cols-2 gap-3 mb-3 bg-orange-50 p-3 rounded-lg border border-orange-100">
+            <div className="grid grid-cols-2 gap-3 mb-3 bg-orange-50 dark:bg-orange-900/10 p-3 rounded-lg border border-orange-100 dark:border-orange-900/30">
               <div className="space-y-1">
-                <Label className="text-xs text-orange-700">车牌号</Label>
-                <input name="vehicle_no" placeholder="例如：京A88888" className="w-full text-sm p-1.5 rounded border border-orange-200" onChange={(e) => {
+                <Label className="text-xs text-orange-700 dark:text-orange-400">车牌号</Label>
+                <input name="vehicle_no" placeholder="例如：京A88888" className="w-full text-sm p-1.5 rounded border border-orange-200 dark:border-orange-800 bg-white dark:bg-gray-800 dark:text-gray-200" onChange={(e) => {
                   const val = e.target.value;
                   if (val) setDescription(prev => {
                     const clean = prev.replace(/【车牌.*?】/g, '');
@@ -291,8 +291,8 @@ export default function RecordForm({ batch }: { batch: batches }) {
                 }} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-orange-700">司机/负责人</Label>
-                <input name="driver_name" placeholder="姓名" className="w-full text-sm p-1.5 rounded border border-orange-200" onChange={(e) => {
+                <Label className="text-xs text-orange-700 dark:text-orange-400">司机/负责人</Label>
+                <input name="driver_name" placeholder="姓名" className="w-full text-sm p-1.5 rounded border border-orange-200 dark:border-orange-800 bg-white dark:bg-gray-800 dark:text-gray-200" onChange={(e) => {
                   const val = e.target.value;
                   if (val) setDescription(prev => {
                     const clean = prev.replace(/【司机.*?】/g, '');
@@ -304,10 +304,10 @@ export default function RecordForm({ batch }: { batch: batches }) {
           )}
 
           {selectedType === "storage" && (
-            <div className="grid grid-cols-2 gap-3 mb-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <div className="grid grid-cols-2 gap-3 mb-3 bg-blue-50 dark:bg-blue-900/10 p-3 rounded-lg border border-blue-100 dark:border-blue-900/30">
               <div className="space-y-1">
-                <Label className="text-xs text-blue-700">仓库名称</Label>
-                <input name="warehouse" placeholder="例如：1号冷库" className="w-full text-sm p-1.5 rounded border border-blue-200" onChange={(e) => {
+                <Label className="text-xs text-blue-700 dark:text-blue-400">仓库名称</Label>
+                <input name="warehouse" placeholder="例如：1号冷库" className="w-full text-sm p-1.5 rounded border border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-800 dark:text-gray-200" onChange={(e) => {
                   const val = e.target.value;
                   if (val) setDescription(prev => {
                     const clean = prev.replace(/【仓库.*?】/g, '');
@@ -316,8 +316,8 @@ export default function RecordForm({ batch }: { batch: batches }) {
                 }} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-blue-700">环境温度</Label>
-                <input name="temperature" placeholder="例如：18℃" className="w-full text-sm p-1.5 rounded border border-blue-200" onChange={(e) => {
+                <Label className="text-xs text-blue-700 dark:text-blue-400">环境温度</Label>
+                <input name="temperature" placeholder="例如：18℃" className="w-full text-sm p-1.5 rounded border border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-800 dark:text-gray-200" onChange={(e) => {
                   const val = e.target.value;
                   if (val) setDescription(prev => {
                     const clean = prev.replace(/【温度.*?】/g, '');
@@ -333,7 +333,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
             <Textarea
               name="description"
               placeholder={`请输入${currentTypeConfig.label}的具体信息...`}
-              className="min-h-32 text-base resize-none focus-visible:ring-green-500 bg-gray-50/50"
+              className="min-h-32 text-base resize-none focus-visible:ring-green-500 bg-gray-50/50 dark:bg-gray-800 dark:text-gray-100"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
@@ -355,7 +355,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
 
             {previewUrl ? (
               // 状态 A：已选择图片，显示预览
-              <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200 group">
+              <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 group">
                 <Image
                   src={previewUrl}
                   alt="预览"
@@ -376,7 +376,7 @@ export default function RecordForm({ batch }: { batch: batches }) {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full text-gray-500 border-dashed border-2 h-12 hover:bg-gray-50 hover:text-green-600 hover:border-green-200 transition-all"
+                className="w-full text-gray-500 dark:text-gray-400 border-dashed border-2 h-12 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400 hover:border-green-200 dark:hover:border-green-800 transition-all"
                 onClick={handleCameraClick}
               >
                 <Camera className="mr-2 w-4 h-4" />
