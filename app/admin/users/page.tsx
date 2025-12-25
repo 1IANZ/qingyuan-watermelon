@@ -1,7 +1,6 @@
-import { Check, CheckCircle2, Clock, Trash2, Users, X, XCircle } from "lucide-react";
+import { Check, CheckCircle2, Clock, Users, XCircle } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { deleteUserAction } from "@/app/actions/approve-user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
+import { DeleteUserButton } from "./DeleteUserButton.client";
 
 async function getUsersList() {
   const users = await db.app_users.findMany({
@@ -70,8 +70,12 @@ export default async function UsersManagementPage() {
       <div className="flex items-center gap-3">
         <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">用户审核管理</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">审核企业用户的注册申请</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            用户审核管理
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+            审核企业用户的注册申请
+          </p>
         </div>
       </div>
 
@@ -172,21 +176,7 @@ export default async function UsersManagementPage() {
                         通过
                       </Button>
                     </form>
-                    <form
-                      action={async () => {
-                        "use server";
-                        await db.app_users.update({
-                          where: { id: user.id },
-                          data: { account_status: "rejected" },
-                        });
-                        revalidatePath("/admin/users");
-                      }}
-                    >
-                      <Button type="submit" size="sm" variant="destructive">
-                        <X className="w-4 h-4 mr-1" />
-                        拒绝
-                      </Button>
-                    </form>
+                    <DeleteUserButton userId={user.id} />
                   </div>
                 </div>
               ))}
@@ -209,11 +199,15 @@ export default async function UsersManagementPage() {
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-foreground">{user.real_name}</p>
+                    <p className="font-medium text-foreground">
+                      {user.real_name}
+                    </p>
                     {getStatusBadge(user.account_status)}
                     <Badge variant="outline">{getRoleName(user.role)}</Badge>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{user.username}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {user.username}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <p className="text-xs text-gray-500 dark:text-gray-500">
@@ -222,22 +216,7 @@ export default async function UsersManagementPage() {
                       : ""}
                   </p>
 
-                  <form
-                    action={async () => {
-                      "use server";
-                      await deleteUserAction(user.id);
-                    }}
-                  >
-                    <Button
-                      type="submit"
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      title="删除账号"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </form>
+                  <DeleteUserButton userId={user.id} />
                 </div>
               </div>
             ))}
