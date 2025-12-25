@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
+
 export type RecordState = {
   message: string;
   success: boolean;
@@ -96,6 +97,39 @@ export async function createRecordAction(
 
 export async function deleteRecordAction(id: string) {
   try {
+    // 1. 获取记录信息以查找关联图片
+    const record = await db.records.findUnique({
+      where: { id },
+      select: { images: true },
+    });
+
+    if (!record) {
+      return { success: false, message: "记录不存在或已被删除" };
+    }
+
+    // 2. 如果存在图片，从 Supabase 删除
+    if (record?.images && record.images.length > 0) {
+      const pathsToDelete: string[] = [];
+
+      record.images.forEach((url) => {
+
+        const parts = url.split("/watermelon/");
+        if (parts.length > 1) {
+          pathsToDelete.push(decodeURIComponent(parts[1]));
+        }
+      });
+
+      if (pathsToDelete.length > 0) {
+        const { error } = await supabaseAdmin.storage
+          .from("watermelon")
+          .remove(pathsToDelete);
+
+        if (error) {
+          console.error("Supabase 图片删除失败:", error);
+        }
+      }
+    }
+
     await db.records.delete({ where: { id } });
     revalidatePath("/admin");
     return { success: true, message: "记录已删除" };
