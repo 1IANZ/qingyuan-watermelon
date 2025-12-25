@@ -37,6 +37,7 @@ export async function addInspectionAction(formData: FormData) {
     await checkAndCreateAlerts(batchId);
 
     revalidatePath("/admin");
+    revalidatePath(`/admin/quality/${batchId}`);
     revalidatePath(`/trace/${batchId}`);
 
     return { success: true, message: "检测记录已添加" };
@@ -48,8 +49,10 @@ export async function addInspectionAction(formData: FormData) {
 
 export async function deleteInspectionAction(id: string) {
   try {
-    await db.inspections.delete({ where: { id } });
+    const deleted = await db.inspections.delete({ where: { id } });
     revalidatePath("/admin");
+    revalidatePath(`/admin/quality/${deleted.batch_id}`);
+    revalidatePath(`/trace/${deleted.batch_id}`);
     return { success: true };
   } catch (_) {
     return { success: false };

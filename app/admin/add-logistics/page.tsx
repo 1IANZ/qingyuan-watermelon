@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getCurrentUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
 import LogisticsForm from "./LogisticsForm.client";
 
@@ -11,6 +12,7 @@ export default async function AddLogisticsPage({
 }) {
   const sp = await searchParams;
   const batchId = sp.batchId as string;
+  const user = await getCurrentUser();
 
   if (!batchId) {
     return (
@@ -52,7 +54,7 @@ export default async function AddLogisticsPage({
         </h1>
       </div>
 
-      <LogisticsForm batch={batch} />
+      <LogisticsForm batch={batch} defaultOperator={user?.realName || ""} />
     </div>
   );
 }

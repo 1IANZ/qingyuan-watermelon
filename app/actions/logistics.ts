@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { checkAndCreateAlerts } from "./alerts";
 
 export async function createLogisticsAction(formData: FormData) {
   const batchId = formData.get("batch_id") as string;
@@ -56,6 +57,9 @@ export async function createLogisticsAction(formData: FormData) {
         images: [], // 后续可以添加图片上传功能
       },
     });
+
+    // 触发预警检查
+    await checkAndCreateAlerts(batchId);
 
     revalidatePath("/admin");
     revalidatePath(`/trace/${batchId}`);

@@ -26,10 +26,15 @@ export async function verifyToken(token: string) {
 
 export type UserRole = "farmer" | "enterprise" | "gov";
 
+import { db } from "@/lib/db";
+
+
+
 export interface UserSession {
 	userId: string;
 	username: string;
 	role: UserRole;
+	realName: string;
 }
 
 export async function getCurrentUser(): Promise<UserSession | null> {
@@ -40,9 +45,18 @@ export async function getCurrentUser(): Promise<UserSession | null> {
 	const payload = await verifyToken(token);
 	if (!payload) return null;
 
+	// Fetch fresh user data from DB to get real_name
+	const user = await db.app_users.findUnique({
+		where: { id: payload.userId as string },
+		select: { real_name: true, username: true, role: true }
+	});
+
+	if (!user) return null;
+
 	return {
 		userId: payload.userId as string,
-		username: payload.username as string,
-		role: payload.role as UserRole,
+		username: user.username,
+		role: user.role as UserRole,
+		realName: user.real_name,
 	};
 }

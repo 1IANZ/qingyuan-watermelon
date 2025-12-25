@@ -7,6 +7,7 @@ import {
   Plus,
   QrCode,
   Sprout,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { db } from "@/lib/db";
+import DeleteBatchButton from "./DeleteBatchButton.client";
+
 
 function getTypeName(type: string) {
   const map: Record<string, string> = {
@@ -182,6 +185,15 @@ export default async function FarmerView({ userId }: { userId: string }) {
                       <ExternalLink className="w-4 h-4 mr-2" /> 查看溯源
                     </Button>
                   </Link>
+                  <DeleteBatchButton
+                    id={batch.id}
+                    batchNo={batch.batch_no}
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </DeleteBatchButton>
                 </CardFooter>
               </Card>
             );

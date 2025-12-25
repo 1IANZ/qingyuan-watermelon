@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { checkAndCreateAlerts } from "./alerts";
 
 export async function submitFeedbackAction(formData: FormData) {
   const batchId = formData.get("batch_id") as string;
@@ -19,6 +20,9 @@ export async function submitFeedbackAction(formData: FormData) {
         consumer: contact || "Anonymous",
       },
     });
+
+    // 触发预警检查
+    await checkAndCreateAlerts(batchId);
 
     revalidatePath(`/trace/${batchNo}`);
     return { success: true, message: "感谢您的评价！" };

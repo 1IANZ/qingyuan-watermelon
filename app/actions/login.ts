@@ -36,7 +36,7 @@ export async function loginAction(_prevState: LoginState, formData: FormData) {
 	}
 
 	// 只有active状态的用户才能继续登录
-	if (user.account_status !== "active") {
+	if (user.account_status !== "active") { 
 		return { message: "账户状态异常,无法登录。" };
 	}
 

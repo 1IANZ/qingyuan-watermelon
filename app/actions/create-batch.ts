@@ -80,6 +80,22 @@ export async function createBatchAction(
 		return { message: "创建失败，请重试", success: false };
 	}
 
+	// ... existing code
+
 	// 跳转
 	redirect("/admin");
+}
+
+export async function deleteBatchAction(id: string) {
+	try {
+		await db.batches.delete({
+			where: { id },
+		});
+
+		revalidatePath("/admin");
+		return { success: true, message: "批次删除成功" };
+	} catch (error) {
+		console.error("Delete batch error:", error);
+		return { success: false, message: "删除失败，请核对权限或重试" };
+	}
 }

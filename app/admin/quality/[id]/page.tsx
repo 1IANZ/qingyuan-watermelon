@@ -1,30 +1,15 @@
 import { format } from "date-fns";
-import {
-  ArrowLeft,
-  Plus,
-  ShieldCheck,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  addInspectionAction,
-  deleteInspectionAction,
-} from "@/app/actions/quality";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
+import DeleteBatchButton from "./DeleteBatchButton.client";
+import DeleteInspectionButton from "./DeleteInspectionButton.client";
+import InspectionForm from "./InspectionForm.client";
 
 export default async function QualityPage({
   params,
@@ -59,9 +44,20 @@ export default async function QualityPage({
   };
 
   const resultMap: Record<string, { label: string; color: string }> = {
-    pass: { label: "合格", color: "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30" },
-    fail: { label: "不合格", color: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30" },
-    warning: { label: "预警", color: "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30" },
+    pass: {
+      label: "合格",
+      color:
+        "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30",
+    },
+    fail: {
+      label: "不合格",
+      color: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30",
+    },
+    warning: {
+      label: "预警",
+      color:
+        "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30",
+    },
   };
 
   return (
@@ -79,6 +75,9 @@ export default async function QualityPage({
               批次号: <span className="font-mono">{batch.batch_no}</span> |
               品种: {batch.variety}
             </p>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <DeleteBatchButton id={batch.id} batchNo={batch.batch_no} />
           </div>
         </div>
 
@@ -110,7 +109,9 @@ export default async function QualityPage({
                               {stageMap[insp.stage] || insp.stage}
                             </span>
                             <span
-                              className={`text-xs px-2 py-0.5 rounded font-medium ${resultMap[insp.result]?.color || "bg-gray-100 dark:bg-gray-800"}`}
+                              className={`text-xs px-2 py-0.5 rounded font-medium ${resultMap[insp.result]?.color ||
+                                "bg-gray-100 dark:bg-gray-800"
+                                }`}
                             >
                               {resultMap[insp.result]?.label || insp.result}
                             </span>
@@ -135,7 +136,9 @@ export default async function QualityPage({
                                   <span className="text-xs text-gray-400 dark:text-gray-500 capitalize">
                                     {key}
                                   </span>
-                                  <span className="font-medium text-foreground">{value}</span>
+                                  <span className="font-medium text-foreground">
+                                    {value}
+                                  </span>
                                 </div>
                               );
                             })}
@@ -143,22 +146,7 @@ export default async function QualityPage({
 
                         <div className="mt-2 text-xs text-gray-400 flex justify-between items-center">
                           <span>检测人: {insp.inspector}</span>
-
-                          <form
-                            action={async () => {
-                              "use server";
-                              await deleteInspectionAction(insp.id);
-                            }}
-                          >
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              type="submit"
-                              className="h-6 w-6 p-0 text-red-400 hover:text-red-600 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </form>
+                          <DeleteInspectionButton id={insp.id} />
                         </div>
                       </div>
                     ))}
@@ -175,85 +163,10 @@ export default async function QualityPage({
                 <CardTitle className="text-lg">录入新检测</CardTitle>
               </CardHeader>
               <CardContent>
-                <form action={async (formData) => {
-                  "use server";
-                  await addInspectionAction(formData);
-                }} className="space-y-4">
-                  <input type="hidden" name="batch_id" value={batch.id} />
-                  <input type="hidden" name="inspector" value={user.username} />
-
-                  <div className="space-y-2">
-                    <Label htmlFor="stage">检测阶段</Label>
-                    <Select name="stage" defaultValue="harvest">
-                      <SelectTrigger id="stage">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="planting">
-                          种植阶段 (农残自检)
-                        </SelectItem>
-                        <SelectItem value="harvest">
-                          采收阶段 (糖度/分级)
-                        </SelectItem>
-                        <SelectItem value="transport">
-                          流通运输 (抽检)
-                        </SelectItem>
-                        <SelectItem value="market">销售终端 (复检)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="result">检测结论</Label>
-                    <Select name="result" defaultValue="pass">
-                      <SelectTrigger id="result">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pass">合格</SelectItem>
-                        <SelectItem value="fail">不合格</SelectItem>
-                        <SelectItem value="warning">
-                          风险预警
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>关键指标 (可选)</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        name="sugar"
-                        placeholder="糖度 (Brix)"
-                        className="text-sm"
-                        aria-label="Sugar Content"
-                      />
-                      <Input
-                        name="pesticide"
-                        placeholder="农残/结果"
-                        className="text-sm"
-                        aria-label="Pesticide Result"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">备注说明</Label>
-                    <Textarea
-                      id="notes"
-                      name="notes"
-                      placeholder="输入检测详情说明..."
-                      className="h-20"
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <Plus className="w-4 h-4 mr-2" /> 提交记录
-                  </Button>
-                </form>
+                <InspectionForm
+                  batchId={batch.id}
+                  userRealName={user.realName}
+                />
               </CardContent>
             </Card>
           </div>

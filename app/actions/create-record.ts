@@ -1,10 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
-import { getCurrentUser } from "@/lib/auth-helper"; 
 export type RecordState = {
   message: string;
   success: boolean;
@@ -23,21 +22,20 @@ export async function createRecordAction(
     return { message: "请完整填写操作类型和详细描述", success: false };
   }
 
-
   const user = await getCurrentUser();
 
   if (!user) {
     return { message: "登录已过期，请重新登录", success: false };
   }
 
-  let operatorName = user.username; 
-  
-  try {
+  let operatorName = user.username;
 
+  try {
     const dbUser = await db.app_users.findUnique({
-      where: { id: user.userId },});
-    
-    if (dbUser && dbUser.real_name) {
+      where: { id: user.userId },
+    });
+
+    if (dbUser?.real_name) {
       operatorName = dbUser.real_name;
     }
   } catch (error) {
@@ -55,7 +53,7 @@ export async function createRecordAction(
       const { error } = await supabase.storage
         .from("watermelon")
         .upload(fileName, imageFile, {
-          cacheControl: "3600", 
+          cacheControl: "3600",
           upsert: false,
         });
 
@@ -89,11 +87,33 @@ export async function createRecordAction(
       },
     });
 
-    revalidatePath("/admin");
-    } catch (error) {
+    return { message: "记录上传成功", success: true };
+  } catch (error) {
     console.error("数据库写入失败:", error);
     return { message: "数据库写入失败", success: false };
   }
+}
 
-  redirect("/admin");
+export async function deleteRecordAction(id: string) {
+  try {
+    await db.records.delete({ where: { id } });
+    revalidatePath("/admin");
+    return { success: true, message: "记录已删除" };
+  } catch (error) {
+    console.error("Delete record error:", error);
+    return { success: false, message: "删除失败" };
+  }
+}
+
+export async function getRecordsByBatchId(batchId: string) {
+  try {
+    const records = await db.records.findMany({
+      where: { batch_id: batchId },
+      orderBy: { recorded_at: "desc" },
+    });
+    return records;
+  } catch (error) {
+    console.error("Get records error:", error);
+    return [];
+  }
 }
