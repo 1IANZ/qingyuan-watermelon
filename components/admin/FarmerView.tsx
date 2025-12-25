@@ -183,16 +183,6 @@ export default async function FarmerView({ userId }: { userId: string }) {
                       <ExternalLink className="w-4 h-4 mr-2" /> 查看溯源
                     </Button>
                   </Link>
-                  <Link href={`/admin/quality/${batch.id}`}>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-9 w-9 border-gray-200 dark:border-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950"
-                      title="质量管理"
-                    >
-                      <FlaskConical className="w-4 h-4" />
-                    </Button>
-                  </Link>
                 </CardFooter>
               </Card>
             );
