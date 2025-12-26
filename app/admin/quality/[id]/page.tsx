@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
+import { REPORT_KEY_MAP, RESULT_OPTIONS, STAGE_OPTIONS } from "./constants";
 import DeleteBatchButton from "./DeleteBatchButton.client";
 import DeleteInspectionButton from "./DeleteInspectionButton.client";
 import InspectionForm from "./InspectionForm.client";
@@ -36,29 +37,21 @@ export default async function QualityPage({
     return <div>Batch not found</div>;
   }
 
-  const stageMap: Record<string, string> = {
-    planting: "种植阶段",
-    harvest: "采收阶段",
-    transport: "流通运输",
-    market: "销售终端",
-  };
+  const stageLabelMap = STAGE_OPTIONS.reduce(
+    (acc, curr) => {
+      acc[curr.value] = curr.shortLabel;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 
-  const resultMap: Record<string, { label: string; color: string }> = {
-    pass: {
-      label: "合格",
-      color:
-        "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30",
+  const resultColorMap = RESULT_OPTIONS.reduce(
+    (acc, curr) => {
+      acc[curr.value] = { label: curr.label, color: curr.color };
+      return acc;
     },
-    fail: {
-      label: "不合格",
-      color: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30",
-    },
-    warning: {
-      label: "预警",
-      color:
-        "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30",
-    },
-  };
+    {} as Record<string, { label: string; color: string }>,
+  );
 
   return (
     <div className="min-h-screen bg-background px-4 pb-4 pt-0 md:p-8">
@@ -106,14 +99,15 @@ export default async function QualityPage({
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-foreground">
-                              {stageMap[insp.stage] || insp.stage}
+                              {stageLabelMap[insp.stage] || insp.stage}
                             </span>
                             <span
-                              className={`text-xs px-2 py-0.5 rounded font-medium ${resultMap[insp.result]?.color ||
+                              className={`text-xs px-2 py-0.5 rounded font-medium ${resultColorMap[insp.result]?.color ||
                                 "bg-gray-100 dark:bg-gray-800"
                                 }`}
                             >
-                              {resultMap[insp.result]?.label || insp.result}
+                              {resultColorMap[insp.result]?.label ||
+                                insp.result}
                             </span>
                           </div>
                           <span className="text-xs text-muted-foreground">
@@ -134,7 +128,7 @@ export default async function QualityPage({
                               return (
                                 <div key={key} className="flex flex-col">
                                   <span className="text-xs text-gray-400 dark:text-gray-500 capitalize">
-                                    {key}
+                                    {REPORT_KEY_MAP[key] || key}
                                   </span>
                                   <span className="font-medium text-foreground">
                                     {value}

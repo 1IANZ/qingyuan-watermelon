@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { RESULT_OPTIONS, STAGE_OPTIONS } from "./constants";
 
 export default function InspectionForm({
   batchId,
@@ -47,10 +48,11 @@ export default function InspectionForm({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="planting">种植阶段 (农残自检)</SelectItem>
-            <SelectItem value="harvest">采收阶段 (糖度/分级)</SelectItem>
-            <SelectItem value="transport">流通运输 (抽检)</SelectItem>
-            <SelectItem value="market">销售终端 (复检)</SelectItem>
+            {STAGE_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -62,9 +64,11 @@ export default function InspectionForm({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="pass">合格</SelectItem>
-            <SelectItem value="fail">不合格</SelectItem>
-            <SelectItem value="warning">风险预警</SelectItem>
+            {RESULT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
